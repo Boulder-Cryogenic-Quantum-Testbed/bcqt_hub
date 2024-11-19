@@ -50,6 +50,11 @@ all_paths_dict = {k:v for k, v in locals().items() if isinstance(v, Path)}
 
 # %%
 
+def strip_specials(input):
+    return input.replace("\\r","").replace("\\n","")
+
+# %%
+
 # make sure all paths exist, then append to $PATH
 for path_name, path in all_paths_dict.items():
     path = path.resolve()  # convert relative Path objs to absolutes
@@ -79,65 +84,67 @@ VNA_Keysight_InstrConfig = {
 
 
 SA_RnS_InstrConfig = {
-    "instrument_name" : "SA_RnS",
-    # "rm_backend" : "@py",
+    "instrument_name" : "Spectrum_Analyzer",
     "rm_backend" : None,
     "instr_address" : 'GPIB::20::INSTR',      
 }
 
-
-SG_Anritsu_InstrConfig = {
-    "instrument_name" : "SG_Anritsu",
+SG_Generator_1_InstrConfig = {
+    "instrument_name" : "SG1_MG3691A",
     # "rm_backend" : "@py",
     "rm_backend" : None,
     "instr_address" : 'GPIB::7::INSTR',  # test instr
-    # "instr_address" : 'GPIB::8::INSTR',  # twpa
 }
+
+SG_Generator_2_InstrConfig = {
+    "instrument_name" : "SG2_MG3692C",
+    "rm_backend" : None,
+    "instr_address" : 'GPIB::8::INSTR',  # twpa
+}
+
+
 
 # %% initialize instruments
 
-PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
-SIG_Generator = SG_Anritsu(SG_Anritsu_InstrConfig, debug=True)
-SIG_Analyzer = SA_RnS_FSEB20(SA_RnS_InstrConfig, debug=True)
+# PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
+# SG_MG3691A = SG_Anritsu(SG_Generator_1_InstrConfig, debug=True)
+SG_MG3692C = SG_Anritsu(SG_Generator_2_InstrConfig, debug=True)
 
-all_instr = [PNA_X, SIG_Generator, SIG_Analyzer]
-# all_instr = [SIG_Generator, SIG_Analyzer]
+SA_RnS = SA_RnS_FSEB20(SA_RnS_InstrConfig, debug=True)
+
+# all_instr = [PNA_X, SG_MG3692C, SA_RnS]
+all_instr = [SG_MG3692C, SA_RnS]
+
+
+# %%
+
+for instr in all_instr:
+    print(f"Checking [{instr.model} {instr.model_no}] for communication:")
+    instr.check_instr_error_queue(print_output=True)
+    instr.print_console(instr.idn, prefix="self.write(*IDN?) ->")
+    instr.return_instrument_parameters(print_output=True)
 
 
 # %%
+SG_MG3692C.set_freq(5.45e9)
+SG_MG3692C.set_power(-17)
+SG_MG3692C.set_output(True)
+SA_RnS.set_freq_center_Hz(5.0e9)
+SA_RnS.set_freq_span_Hz(1e9)
+SA_RnS.set_IF_bandwidth(20000)
 
-# for instr in all_instr:
-#     instr.check_instr_error_queue(print_output=True)
-#     instr.print_console(instr.idn, prefix="self.write(*IDN?) ->")
-#     instr.return_instrument_parameters(print_output=True)
+SA_RnS.trigger_sweep()
+traceData = SA_RnS.return_data()
 
-# %%
-SIG_Generator.set_freq(4.909e9)
-SIG_Generator.set_power(-17)
-SIG_Generator.set_output(True)
+SG_MG3692C.check_instr_error_queue(print_output=True)
+SA_RnS.check_instr_error_queue(print_output=True)
 
-SIG_Analyzer.set_freq_center_Hz(5.0e9)
-SIG_Analyzer.set_freq_span_Hz(1e9)
-SIG_Analyzer.set_IF_bandwidth(5000)
-# SIG_Analyzer.trigger_sweep()
-# SIG_Analyzer.resource.write("*OPC")
-SIG_Analyzer.arm_trigger()
-print(SIG_Analyzer.send_cmd_and_wait("INIT:IMM"))
-
-SIG_Generator.check_instr_error_queue(print_output=True)
-SIG_Analyzer.check_instr_error_queue(print_output=True)
-
-# # %%
  
-freqCenterHz = SIG_Analyzer.get_freq_center_Hz()
-freqSpan = SIG_Analyzer.get_freq_span_Hz()
+freqCenterHz = SA_RnS.get_freq_center_Hz()
+freqSpan = SA_RnS.get_freq_span_Hz()
 
-traceStr = SIG_Analyzer.query_check(f'TRAC:DATA? TRACE{1}') 
-traceData = [float(x) for x in traceStr.split(',')]
-freqs = np.linspace(freqCenterHz - freqSpan / 2, freqCenterHz + freqSpan / 2, len(traceData));
+freqs = np.linspace(freqCenterHz - freqSpan / 2, freqCenterHz + freqSpan / 2, len(traceData))
 
-# display(SIG_Generator.return_instrument_parameters())
-# display(SIG_Analyzer.return_instrument_parameters())
 
 from scipy.signal import find_peaks
 peaks, _ = find_peaks(traceData, prominence=20)
@@ -158,3 +165,5 @@ plt.show()
 # *OPC? places a 1 on the output queue when operation is complete. *OPC raises 
 # bit 0 in the event status register when operation is complete. Both outputs are used for client synchronization.
 # For example, the client may wait until it receives 1 on the output queue from *OPC?
+
+
