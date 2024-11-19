@@ -200,9 +200,9 @@ all_axes = qh.plot_s2p_df(s2p_df)
     Archive_Data(VNA, s2p_df, meas_name, expt_category, save_dir="./data", all_axes=None):
     return filename, final_path.parent
 """
-
-expt_category = "HEMT_RT_Amplifiers"
-meas_name = "RT_Ampl_A"
+save_dir = "./cooldown57"
+expt_category = "RT Calibration"
+meas_name = "normalize_background"
 
 filename, filepath = Archive_Data(PNA_X, s2p_df, meas_name=meas_name, expt_category=expt_category, all_axes=all_axes)
 
