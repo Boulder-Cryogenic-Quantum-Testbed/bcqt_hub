@@ -12,6 +12,7 @@ class SA_RnS_FSEB20(BaseDriver):
 
     def __init__(self, InstrConfig_Dict, instr_resource=None, instr_address=None, debug=False, **kwargs):
         super().__init__(InstrConfig_Dict, instr_resource, instr_address, debug, **kwargs)
+        self.write_check("TRIG:SOUR IMM")   # TODO: ???
           
     def read_check(self, fmt = str):
         return super().read_check(fmt=fmt)
@@ -28,6 +29,10 @@ class SA_RnS_FSEB20(BaseDriver):
     def return_instrument_parameters(self, print_output=False):
         return super().return_instrument_parameters(print_output)
     
+        
+    def strip_specials(self, ret):
+        return ret.replace("\\r","").replace("\\n","")
+
     
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ~~~  get/set Instr Parameters
@@ -83,41 +88,59 @@ class SA_RnS_FSEB20(BaseDriver):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-    def toggle_continuous_sweep(self, sweep_mode):
-        state = self.Bool2OnOff(state) 
-        self.write_check(f'INIT:CONT {sweep_mode}' )
+    def toggle_continuous_sweep(self, sweep_mode : bool = None):
+        if sweep_mode is None: 
+            currentState = self.query_check('INIT:CONT?')[0]
+            self.print_debug(f"{currentState=}")
+            newState = "ON" if currentState == '0' else "OFF"
+        else:
+            newState = "ON" if sweep_mode == True else "OFF"
+            
+        self.write_check(f'INIT:CONT {newState}' )
         continuousSweepState = self.query_check('INIT:CONT?')
         if self.debug is True:
             self.print_console(f'    Continuous sweep mode = {continuousSweepState}')
     
 
-    def toggle_averaging(self, avg_mode):
-        self.write_check(f'AVER {avg_mode}')
+    def set_averaging(self, num_averages : int ):
+        self.write_check(f'AVER {num_averages}')
         setAvgState = self.query_check('AVER:COUN?')
         if self.debug is True:
             self.print_console(f'    Set spectrum analyzer averaging = {setAvgState}')
 
-    def arm_trigger(self):
-        status = self.write_check("INIT:CONT OFF")
-        return status
-    
     def trigger_sweep(self):
         
-        # self.write_check('INIT:IMM')
+        sweep_time = float(self.strip_specials(self.query_check("SENSE:SWE:TIME?")))
+        self.print_debug(f"{sweep_time = }")
         
-        # cancel previous sweep, start new one, and then 
-        # use *OPC? 
-        self.query_check('INIT:IMM; *OPC?')
+        self.write_check("*TRG")
+        self.write_check('INIT:DISP ON')
+        time.sleep(sweep_time)
         
-        ret = self.read_check(int)
+        check = False
+        tstart = time.time()   
+        while check is False:
+            time.sleep(0.5)
+            t_elapsed = time.time() - tstart
+            print(f"\n      Time elapsed: [{t_elapsed:1.2f}s]", end="\r")
+            
+            # check_str is a string, "0" = busy or "1" = complete
+            check_str = self.query_check('STAT:OPER:COND?')[1]
+            self.print_debug(f"{check_str = }")
+
+            # once it is "1", print that we're finished
+            if check_str != "0":
+                print(f"\nTrace finished. Uploading now.")
+                print(f"\n   Total time elapsed: {t_elapsed:1.2f} seconds", end="\r")
+                if t_elapsed >= 600:
+                    print(f"                     = {t_elapsed/60:1.1f} minutes \n")
+                
+                # update the variable and let the while finish
+                check = bool(check_str)
         
-        if ret == 0:
-            self.print_console('    *OPC returned "0" - failed to sweep?')
-        
-        if self.debug is True:
-            self.print_console('    Single sweep triggered')
-        
-        return ret
+        # finish off by turning off scanning
+        self.write_check('INIT:CONT OFF')
+            
     
     def send_marker_to_max(self):
         self.write_check('CALC:MARK:MAX')
@@ -139,55 +162,12 @@ class SA_RnS_FSEB20(BaseDriver):
     # ~~~  Instr Scripts
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         
-    def take_single_trace(self, trace_num=1):
+    def return_data(self, trace_num=1):
         
-        """ leftover matlab code, not sure if useful """
-        # self.write_check(':FORM ASCii'); # set the trace data to ascii format, slower but more readable than binary 
+        traceStr = self.query_check(f'TRAC:DATA? TRACE{trace_num}')
+        traceData = [float(x) for x in traceStr.split(',')]
         
-        # nBytes = 16 * nFreqPts; # it's roughly 13 bytes per data point, when pulling traces in ascii format, so this gives some buffer (ha ha)
-        # if instr.gpibObj.InputBufferSize < nBytes
-        #     if instr.verbose
-        #         fprintf('SA input buffer size insufficient. Setting buffer size (requires closing and reopening gpib connection).')
-            
-            # fclose(instr.gpibObj);
-            # instr.gpibObj.InputBufferSize = nBytes;
-            # fopen(instr.gpibObj)
-        
-        # continuously check if SA has finished its trace
-        check = False
-        tstart = time.time()
-        
-        # while check is False:
-        #     time.sleep(1)
-        #     t_elapsed = time.time() - tstart
-        #     print(f"      time elapsed: [{t_elapsed:1.0f}s]")
-                
-        #     # check_str is a string, "0" = busy or "1" = complete
-        #     check_str = self.query_check('STAT:OPER:AVER1:COND?')[1]
-
-        #     # once it is "1", print that we're finished
-        #     if check_str != "0":
-        #         print(f"\nTrace finished. Uploading now.")
-        #         print(f"\n   Total time elapsed: {t_elapsed:1.0f} seconds")
-        #         if t_elapsed >= 600:
-        #             print(f"                     = {t_elapsed/60:1.1f} minutes \n")
-                
-        #         # update the variable and let the while finish
-        #         check = bool(check_str)
-
-
-        # trigger sweep then get data 
-        self.trigger_sweep()
-        
-        traceData = self.query_check(f'TRAC:DATA? TRACE{trace_num}')
-        
-        
-        # manually determine x axis
-        freqCenterHz = self.get_freq_center_Hz()
-        freqSpan = self.get_freq_span_Hz()
-        freqs = np.linspace(freqCenterHz - freqSpan / 2, freqCenterHz + freqSpan / 2, len(traceData));
-        
-        return freqs, traceData
+        return traceData
     
     
          
@@ -211,10 +191,6 @@ if __name__ == '__main__':
     test_SA.print_class_members()
     
     display(test_SA.query_check("*IDN?"))
-    
-    
-    
-    
     
     ##
     
