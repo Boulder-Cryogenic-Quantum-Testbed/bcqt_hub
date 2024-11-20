@@ -30,7 +30,7 @@ PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
 ## TODO: This should go in the ExptConfig object
 Expt_Config = {
     "points" : 50,
-    "fc" : 6445962657.0,
+    "f_center" : 6445962657.0,
     "span" : 0.25e6,
     "if_bandwidth" : 200,
     "power" : -65,

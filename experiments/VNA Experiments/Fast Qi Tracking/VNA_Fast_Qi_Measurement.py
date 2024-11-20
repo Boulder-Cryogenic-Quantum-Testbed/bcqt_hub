@@ -23,7 +23,7 @@ script_filename = Path(__file__).stem
 # lazy way to import modules - just append to path... TODO: fix via proper __init__.py :)
 
 msmt_code_path = Path(r"../../..").resolve()
-experiment_path = Path("..").resolve()
+experiment_path = Path("../..").resolve()
 src_path = msmt_code_path / "src"
 driver_path = msmt_code_path / "drivers"
 instr_path = driver_path / "instruments"
@@ -53,23 +53,7 @@ from VNA_Keysight import VNA_Keysight
 from quick_helpers import unpack_df, plot_data_with_pandas
 # from DataAnalysis import DataAnalysis
 
-VNA_Keysight_InstrConfig = {
-    "instrument_name" : "VNA_Keysight",
-    "rm_backend" : "@py",
-    # "rm_backend" : None,
-    "instr_address" : 'TCPIP0::192.168.0.105::inst0::INSTR',
-    # "instr_address" : 'TCPIP0::K-N5231B-57006.local::inst0::INSTR',
-}
-
-PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
-
-
-if "all_dfs" not in locals().keys():
-    all_dfs = {}
-    
-# %%
-
-all_fcs =  [ #5.733901e9,
+all_f_centers =  [ #5.733901e9,
              #5.773425e9,
              #5.822726e9,
              5.863280e9,
@@ -80,60 +64,65 @@ all_fcs =  [ #5.733901e9,
              #6.417038e9
             ]
 
-
-Expt_Config = {
-    "points" : 100,
-    # "fc" : all_fcs[1],
-    "span" : 0.1e6,
-    "if_bandwidth" : 500,
-    "power" : -72,
+VNA_Keysight_InstrConfig = {
+    "instrument_name" : "VNA_Keysight",
+    "rm_backend" : None,
+    "instr_address" : 'TCPIP0::192.168.0.105::inst0::INSTR',
+    "points" : 51,
+    # "f_center" : all_f_centers[0],
+    "f_span" : 0.5e6,
+    "if_bandwidth" : 25000,
+    "power" : -50,
     "edelay" : 76.36,
     "averages" : 2,
-    "sparam" : 'S21',
+    "sparam" : ['S21'],
     
     # "segment_type" : "homophasal",
     "segment_type" : "hybrid",
-    
     "Noffres" : 15
 }
 
+PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
+
+if "all_dfs" not in locals().keys():
+    all_dfs = {}
+    
 
 # %%
 
-sets = 100
-num_msmt_per_set = 10000
+sets = 1
+num_msmt_per_set = 1
 
 start_time = time.time()
 
 # measure all resonators once for X sets, with Y traces/resonator in each set
 for set_idx in range(sets): 
     
-    for res_idx, fc in enumerate(all_fcs):
+    for res_idx, f_center in enumerate(all_f_centers):
     
-        Expt_Config["segments"] = PNA_X.compute_homophasal_segments(**Expt_Config)
-        Expt_Config["fc"] = fc
+        PNA_X.configs["f_center"] = f_center
+        PNA_X.compute_homophasal_segments()
         
-        PNA_X.set_instr_params(Expt_Config)
-        PNA_X.get_instr_params()
-        PNA_X.setup_measurement()
         
         fit_results = {}
         res_start_time = time.time()
         
         for idx in range(num_msmt_per_set):
         
-            Expt_Config["time_start"] = datetime.now()
+            PNA_X.set_instr_params(VNA_Keysight_InstrConfig)
+            PNA_X.configs["time_start"] = datetime.now()
             
             # PNA_X.setup_measurement()
             PNA_X.check_instr_error_queue()
-            PNA_X.acquire_trace()
+            PNA_X.setup_s2p_measurement()
+            PNA_X.run_measurement()
             freqs, magn_dB, phase_deg = PNA_X.return_data()
             
-            # freqs, magn, phase = PNA_X.take_single_trace(Expt_Config)
+            # freqs, magn, phase = PNA_X.take_single_trace(PNA_X.configs)
 
             df, fig, axes = plot_data_with_pandas(freqs, magn_dB, phase_deg=phase_deg)
 
-            title_str = str(f"{Expt_Config["span"]/1e6:1.2f}MHz_span_{Expt_Config["averages"]}_avgs_{Expt_Config["if_bandwidth"]}_IFBW_{Expt_Config["power"]}_dBm")
+            title_str = str(f"{PNA_X.configs["span"]/1e6:1.2f}MHz_span_{PNA_X.configs["averages"]}_avgs_{PNA_X.configs["if_bandwidth"]}_IFBW_{PNA_X.configs["power"]}_dBm")
             fig = axes["A"].get_figure()
             fig.suptitle(title_str, size=16)
             fig.tight_layout()
@@ -144,10 +133,10 @@ for set_idx in range(sets):
 
             SingleFit = DataAnalysis(None, dstr)
 
-            fc, span, ifbw, avg, power = Expt_Config["fc"], Expt_Config["span"], Expt_Config["if_bandwidth"], Expt_Config["averages"], Expt_Config["power"]
+            f_center, span, ifbw, avg, power = PNA_X.configs["f_center"], PNA_X.configs["span"], PNA_X.configs["if_bandwidth"], PNA_X.configs["averages"], PNA_X.configs["power"]
             name = f"Set{set_idx+1}_Msmt{idx+1}_span_{span/1e3:1.0f}kHz_power_{power}dBm_{avg}_avgs"
 
-            res_dir = csv_path / f"Res{res_idx}_{fc/1e6:1.0f}MHz"
+            res_dir = csv_path / f"Res{res_idx}_{f_center/1e6:1.0f}MHz"
             res_dir.mkdir(parents=True, exist_ok=True)
             filename = str(res_dir / f"{name}.csv")
             
@@ -164,12 +153,12 @@ for set_idx in range(sets):
         #         print(f"Error: {e}")
         #         continue
 
-        #     Q, Qc, fc, phi = params
-        #     Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, fc_err = conf_intervals
+        #     Q, Qc, f_center, phi = params
+        #     Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, f_center_err = conf_intervals
             
         #     Qi = 1/(1/Q - np.cos(phi)/np.abs(Qc))
             
-        #     params = [Q, Qi, Qc, fc, phi]
+        #     params = [Q, Qi, Qc, f_center, phi]
             
         #     parameters_dict = {
         #         "power" : power,
@@ -177,13 +166,13 @@ for set_idx in range(sets):
         #         "Q_err" : Q_err,
         #         "Qi" : Qi,
         #         "Qi_err" : Qi_err,
-        #         "Qc" : Qc,
+        #         "Qc" : Qc, 
         #         "Qc_err" : Qc_err,
-        #         "fc" : fc,
-        #         "fc_err" : fc_err,
+        #         "f_center" : f_center,
+        #         "f_center_err" : f_center_err,
         #         "phi" : phi,
         #         "phi_err" : phi_err,
-        #         "meas_time" : Expt_Config["time_start"]
+        #         "meas_time" : PNA_X.configs["time_start"]
         #     }
 
         #     perc_errs = {
@@ -193,16 +182,16 @@ for set_idx in range(sets):
         #     }
             
         
-            # fit_results[filename] = (df, Expt_Config, parameters_dict, perc_errs)
+            # fit_results[filename] = (df, PNA_X.configs, parameters_dict, perc_errs)
             
         #     plt.close()
             
         
         # all_param_dicts = {}
-        # for key, (df, Expt_Config, parameters_dict, perc_errs) in fit_results.items():
+        # for key, (df, PNA_X.configs, parameters_dict, perc_errs) in fit_results.items():
         #     all_param_dicts[key] = parameters_dict
         
-        # fit_dict_name = str((csv_path / "..").resolve() / f"{fc/1e3:1.0f}MHz_all_fit_results.csv")
+        # fit_dict_name = str((csv_path / "..").resolve() / f"{f_center/1e3:1.0f}MHz_all_fit_results.csv")
             
         # df_fit_results = pd.DataFrame.from_dict(all_param_dicts, orient="index").reset_index()
         # df_fit_results.to_csv(fit_dict_name)
@@ -212,7 +201,7 @@ for set_idx in range(sets):
         
         resonator_elapsed_time = end_time - res_start_time
         total_elapsed_time = end_time - start_time 
-        display(f"Finished Resonator [{res_idx}/{len(all_fcs)}]! \nSingle resonator elapsed time: {resonator_elapsed_time/60:1.1f} minutes.\nTotal measurement resonator elapsed time: {total_elapsed_time/60:1.1f} minutes.")
+        display(f"Finished Resonator [{res_idx}/{len(all_f_centers)}]! \nSingle resonator elapsed time: {resonator_elapsed_time/60:1.1f} minutes.\nTotal measurement resonator elapsed time: {total_elapsed_time/60:1.1f} minutes.")
             
 
 
@@ -230,8 +219,8 @@ for set_idx in range(sets):
         
 #         print(f"Fitting {filename}")
         
-#         power = Expt_Config["power"]
-#         time_end = Expt_Config["time_end"]
+#         power = PNA_X.configs["power"]
+#         time_end = PNA_X.configs["time_end"]
         
 #         try:
 #             # output_params, conf_array, error, init, output_path
@@ -244,12 +233,12 @@ for set_idx in range(sets):
 #         # 1/Qi = 1/Q - cos(phi)/|Qc|
 #         # Qi = 1/(1/Q - cos(phi)/|Qc|)
         
-#         Q, Qc, fc, phi = params
-#         Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, fc_err = conf_intervals
+#         Q, Qc, f_center, phi = params
+#         Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, f_center_err = conf_intervals
         
 #         Qi = 1/(1/Q - np.cos(phi)/np.abs(Qc))
         
-#         params = [Q, Qi, Qc, fc, phi]
+#         params = [Q, Qi, Qc, f_center, phi]
         
 #         parameters_dict = {
 #             "power" : power,
@@ -259,8 +248,8 @@ for set_idx in range(sets):
 #             "Qi_err" : Qi_err,
 #             "Qc" : Qc,
 #             "Qc_err" : Qc_err,
-#             "fc" : fc,
-#             "fc_err" : fc_err,
+#             "f_center" : f_center,
+#             "f_center_err" : f_center_err,
 #             "phi" : phi,
 #             "phi_err" : phi_err,
 #         }
@@ -271,12 +260,12 @@ for set_idx in range(sets):
 #             "Qc_perc" : Qc_err / Qc,
 #         }
         
-#         fit_results[filename] = (df, Expt_Config, parameters_dict, perc_errs)
+#         fit_results[filename] = (df, PNA_X.configs, parameters_dict, perc_errs)
         
 #         plt.show()
     
 #     all_param_dicts = {}
-#     for key, (df, Expt_Config, parameters_dict, perc_errs) in fit_results.items():
+#     for key, (df, PNA_X.configs, parameters_dict, perc_errs) in fit_results.items():
 #         all_param_dicts[key] = parameters_dict
         
 #     df_fit_results = pd.DataFrame.from_dict(all_param_dicts, orient="index").reset_index()

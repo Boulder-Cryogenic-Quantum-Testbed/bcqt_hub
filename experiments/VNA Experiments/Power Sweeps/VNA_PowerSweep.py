@@ -54,7 +54,7 @@ PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
 
 # %%
 
-all_fcs =  [ 5.7338e9,
+all_f_centers =  [ 5.7338e9,
              5.7738e9,
              5.8226e9,
              5.8632e9,
@@ -69,7 +69,7 @@ all_fcs =  [ 5.7338e9,
 Expt_Config = {
     "points" : 42,
     
-    "fc" : all_fcs[5],
+    "f_center" : all_f_centers[5],
     
     "span" : 0.3e6,
     "if_bandwidth" : 1000,
@@ -146,12 +146,12 @@ for idx in range(num_msmts):
         # 1/Qi = 1/Q - cos(phi)/|Qc|
         # Qi = 1/(1/Q - cos(phi)/|Qc|)
         
-        Q, Qc, fc, phi = params
-        Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, fc_err = conf_intervals
+        Q, Qc, f_center, phi = params
+        Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, f_center_err = conf_intervals
         
         Qi = 1/(1/Q - np.cos(phi)/np.abs(Qc))
         
-        params = [Q, Qi, Qc, fc, phi]
+        params = [Q, Qi, Qc, f_center, phi]
         
         parameters_dict = {
             "power" : power,
@@ -161,8 +161,8 @@ for idx in range(num_msmts):
             "Qi_err" : Qi_err,
             "Qc" : Qc,
             "Qc_err" : Qc_err,
-            "fc" : fc,
-            "fc_err" : fc_err,
+            "f_center" : f_center,
+            "f_center_err" : f_center_err,
             "phi" : phi,
             "phi_err" : phi_err,
         }
@@ -282,12 +282,12 @@ for idx in range(num_msmts):
 #     # 1/Qi = 1/Q - cos(phi)/|Qc|
 #     # Qi = 1/(1/Q - cos(phi)/|Qc|)
     
-#     Q, Qc, fc, phi = params
-#     Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, fc_err = conf_intervals
+#     Q, Qc, f_center, phi = params
+#     Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, f_center_err = conf_intervals
     
 #     Qi = 1/(1/Q - np.cos(phi)/np.abs(Qc))
     
-#     params = [Q, Qi, Qc, fc, phi]
+#     params = [Q, Qi, Qc, f_center, phi]
     
 #     parameters_dict = {
 #         "power" : power,
@@ -297,8 +297,8 @@ for idx in range(num_msmts):
 #         "Qi_err" : Qi_err,
 #         "Qc" : Qc,
 #         "Qc_err" : Qc_err,
-#         "fc" : fc,
-#         "fc_err" : fc_err,
+#         "f_center" : f_center,
+#         "f_center_err" : f_center_err,
 #         "phi" : phi,
 #         "phi_err" : phi_err,
 #     }

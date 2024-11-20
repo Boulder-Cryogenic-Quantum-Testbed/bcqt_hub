@@ -191,12 +191,7 @@ class VNA_Keysight(BaseDriver):
                 and then make sure that both pairs of values are
                 saved to the config. Additionally return
         """
-        # check for old variable names
-        if "fc" in self.configs:
-            self.print_console("Found 'fc' in configs-  switch to f_center!")
-            self.configs["f_center"] = self.configs["fc"]
-            del self.configs["fc"]   # remove bad config label
-        self.add_kwargs_and_filter_configs()
+        
         # get bounds by looking for f_center/f_span or f_start/f_stop!
         if "f_center" in self.configs and "f_span" in self.configs:
             f_center, f_span = self.configs["f_center"], self.configs["f_span"]
@@ -207,6 +202,13 @@ class VNA_Keysight(BaseDriver):
             f_start, f_stop = self.configs["f_start"], self.configs["f_stop"]
             f_span = f_stop - f_start
             f_center = f_start + f_span/2
+        else:
+            self.print_debug(f"Did not find a pair from [f_center, f_span] or [f_start, f_stop]")
+            for var in ["f_start", "f_stop", "f_center", "f_span"]:
+                try:
+                    self.print_debug(self.configs[var])
+                except:
+                    self.print_debug(f"Did not find {var}")
             
         # set values in config and return a dict for convenience
         self.configs["f_start"] = f_start
@@ -234,12 +236,12 @@ class VNA_Keysight(BaseDriver):
             self.configs["f_center"] = self.configs["fc"]
             del self.configs["fc"]
         if "span" in self.configs:
-            self.configs["f_span"] = self.configs["f_span"]
+            self.configs["f_span"] = self.configs["span"]
             del self.configs["f_span"]
-        for name in ["n_pts", "points", "n_points"]:
+        for name in ["points", "n_points"]:
             if name in self.configs:
                 self.configs["n_pts"] = self.configs[name]
-                del self.configs["n_pts"]
+                del self.configs[name]
         
         # check all kwargs if their equivalent without underscores exists
         #   e.g. check if 'fstart' exists, then replace it with 'f_start'
@@ -307,18 +309,18 @@ class VNA_Keysight(BaseDriver):
                     for ff1, ff2 in zip(freq[0::2], freq[1::2])]
         
         elif segment_type == 'hybrid':
-            assert Noffres is not None
+            assert self.configs["Noffres"] is not None
             
             # split between homophasal and linear
             #   homophasal near resonance   freqs = [fa->fb]
             #   linear off resonance        freqs = [fstart->fa] and [fb->fstop]
-            hsegments = [f',1,2,{ff1*fscale},{ff2*fscale}'
+            h_segments = [f',1,2,{ff1*fscale},{ff2*fscale}'
                     for ff1, ff2 in zip(freq[0::2], freq[1::2])][1:-1]
             fa = np.min(freq[1:-1]) * fscale
             fb = np.max(freq[1:-1]) * fscale
 
             segments = [f',1,{Noffres},{fstop*fscale}, {fb}',
-                        *hsegments,
+                        *h_segments,
                         f',1,{Noffres},{fa},{fstart*fscale}']
         elif segment_type == 'linear':
             # simple linear sweep
@@ -327,6 +329,7 @@ class VNA_Keysight(BaseDriver):
         else:
             raise ValueError("Missing segment_type in compute_homophasal_segments for VNA_Keysight driver.")
             
+        self.configs["segments"] = segments
         return segments
     
     def setup_s2p_measurement(self, Expt_Config=None):
@@ -428,7 +431,7 @@ class VNA_Keysight(BaseDriver):
 
         # self.write_check('SYSTem:FPRESet')
         self.write_check('SYSTem:UPRESet')
-        time.sleep(0.05)
+        time.sleep(0.01)
         self.write_check('OUTPut:STATe OFF')
 
         # Initial setup for measurement
@@ -519,11 +522,11 @@ class VNA_Keysight(BaseDriver):
         while check is False:
             time.sleep(0.05)
             t_elapsed = time.time() - tstart
-            print(f"\n      Time elapsed: [{t_elapsed:1.2f}s]", end="\r")
             
             # check_str is a string, "0" = busy or "1" = complete
-            check_str = self.query_check('STAT:OPER:AVER1:COND?')[1]
-
+            check_str = self.strip_specials(self.query_check('STAT:OPER:AVER1:COND?'))[1]
+            print(f"\n      Time elapsed: [{t_elapsed:1.2f}s]  {check_str=}", end="\r")
+            
             # once it is "1", print that we're finished
             if check_str != "0":
                 print(f"\nTrace finished. Uploading now.")
@@ -561,7 +564,7 @@ class VNA_Keysight(BaseDriver):
         
         return freqs, magn, phase
     
-    def return_data_s2p(self):
+    def return_data_s2p(self, archive_complex=False):
         
         """
             Transfer data from VNA to PC, organized into a dict
@@ -626,9 +629,16 @@ class VNA_Keysight(BaseDriver):
         
         all_dfs = []
         for sparam, (freqs, magn_dB, phase_rad) in data_dict.items():
-            all_arrays = np.array([freqs, magn_dB, phase_rad])
-            all_columns = ["Frequency", f"{sparam} magn_dB", f"{sparam} phase_rad"]
+            if archive_complex is False:
+                all_arrays = np.array([freqs, magn_dB, phase_rad])
+                all_columns = ["Frequency", f"{sparam} magn_dB", f"{sparam} phase_rad"]
+            else:
+                magn_lin = 10**(magn_dB/20)
+                cmplx = magn_lin * np.exp(1j*phase_rad)
+                all_arrays = np.array([freqs, cmplx])
+                all_columns = ["Frequency", f"{sparam} complex"]
             df = pd.DataFrame.from_records(all_arrays.T, columns=all_columns)
+            df.apply(lambda x: np.real(x))
             all_dfs.append(df)
             
         # every day I grow resentful of pandas for making my life harder for no reason
@@ -641,6 +651,7 @@ class VNA_Keysight(BaseDriver):
         first_row = {col : val for col, val in zip(combined_df.columns, [datetime.now()]*len(combined_df.columns))}
         datetime_row = pd.DataFrame(first_row, index=["datetime.now()"])
         final_df = pd.concat([datetime_row, combined_df.iloc[:]])
+        
         
         return final_df
     

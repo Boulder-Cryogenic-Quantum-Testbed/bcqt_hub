@@ -14,16 +14,16 @@ class BaseDriver():
         """
         
         self.debug = debug
-        self.instr_config = InstrConfig_Dict        
-        self.instrument_name = self.instr_config["instrument_name"].upper()
-        self.rm_backend = self.instr_config["rm_backend"] if "rm_backend" in self.instr_config else None
+        self.configs = InstrConfig_Dict        
+        self.instrument_name = self.configs["instrument_name"].upper()
+        self.rm_backend = self.configs["rm_backend"] if "rm_backend" in self.configs else None
 
         # pick between address and resource
-        self.instr_address = self.instr_config["instr_address"] if "instr_address" in self.instr_config else None
-        self.instr_resource = self.instr_config["instr_resource"] if "instr_resource" in self.instr_config else None
+        self.instr_address = self.configs["instr_address"] if "instr_address" in self.configs else None
+        self.instr_resource = self.configs["instr_resource"] if "instr_resource" in self.configs else None
 
         # if self.debug is True:
-        #     pyvisa.log_to_screen()
+            # pyvisa.log_to_screen()
             
         # Open the pyvisa resource manager 
         self.open_pyvisa_backend()
@@ -33,9 +33,9 @@ class BaseDriver():
           
         # full reset of the instrument, write manually without checking
 
-        self.write_check("*CLS")    # clears status register and error queue of instrument
-        self.write_check("*RST")    # resets to factory default state
-        self.write_check("*ESE 1")  # resets the event status registry for *ESR? loops 
+        # self.write_check("*CLS")    # clears status register and error queue of instrument
+        # self.write_check("*RST")    # resets to factory default state
+        # self.write_check("*ESE 1")  # resets the event status registry for *ESR? loops 
                                     #    -> (see the 'send_cmd_and_wait()' method )
 
         self.idn = self.query_check("*IDN?")
@@ -46,8 +46,9 @@ class BaseDriver():
         self.print_console(f"Resource successfully opened for [{self.instrument_name}]")
         self.print_debug(self.idn)
         
-        # if self.debug is True:
-        #     self.debug_force_clear()
+        if self.debug is True:
+            self.debug_writes = 0
+            # self.debug_force_clear()
 
     def __del__(self):
         """
@@ -63,39 +64,53 @@ class BaseDriver():
     ##############  instrument operation  ##############
     ####################################################
     
+    def read_check(self, fmt = str):
+        ret = self.resource.read()
+        return fmt(ret)
     
-    @abstractmethod
-    def write_check(self, cmd: str, check_errors: bool = True):
-        """
-        Writes a command `cmd` and checks for errors
-        """
+    def write_check(self, cmd: str):
+        self.resource.write(cmd)
+        return 
+    
+    def query_check(self, cmd, fmt = str):
+        ret = self.resource.query(cmd)
+        return fmt(ret)
+    
+    def check_instr_error_queue(self, print_output=False):
+        return '0', 'disabled'
+    
+    # @abstractmethod
+    # def write_check(self, cmd: str, check_errors: bool = True):
+    #     """
+    #     Writes a command `cmd` and checks for errors
+    #     """
         
-        try:
-            self.resource.write(cmd)
-        except pyvisa.InvalidSession as e:
-            print(e)
-            self.print_debug("Caught InvalidSession exception in write_check()")
-            self.print_debug("Restarting backend and reopening resource)")
+    #     try:
+    #         self.resource.write(cmd)
+    #     except pyvisa.InvalidSession as e:
+    #         print(e)
+    #         self.print_debug("Caught InvalidSession exception in write_check()")
+    #         self.print_debug("Restarting backend and reopening resource)")
         
-        status, description = self.check_instr_error_queue()
-        status = int(status)
+    #     status, description = self.check_instr_error_queue()
+    #     status = int(status)
         
-        assert not status, f'Error: {description}'
+    #     assert not status, f'Error: {description}'
         
-    def query_check(self, cmd, fmt=str):
-        try:
-            ret = self.resource.query(cmd)
-            return fmt(ret)
+    # def query_check(self, cmd, fmt=str):
+    #     try:
+    #         ret = self.resource.query(cmd)
+    #         return fmt(ret)
             
-        except Exception as e:  
-            if type(e) == pyvisa.InvalidSession:    # catch a stupid bug 
-                self.handle_InvalidSession_error(cmd, e)
-                ret = self.resource.query(cmd)
-                return fmt(ret)
+    #     except Exception as err:  
+    #         if type(err) == pyvisa.InvalidSession:    # catch a stupid bug 
+    #             self.handle_InvalidSession_error(cmd, err)
+    #             ret = self.resource.query(cmd)
+    #             return fmt(ret)
             
-            if type(e) == pyvisa.VisaIOError or type(e) == ValueError:   # likely a timeout
-                self.handle_VisaIOError(cmd, e)
-                raise e
+    #         if type(err) == pyvisa.VisaIOError or type(err) == ValueError:   # likely a timeout
+    #             self.handle_VisaIOError(cmd, err)
+    #             raise err
             
             
     def query_check_ascii(self, cmd : str, container = np.array):
@@ -270,26 +285,32 @@ class BaseDriver():
     ##############  instrument utilities  ##############
     ####################################################
     
-    @abstractmethod
-    def check_instr_error_queue(self, print_output=False):
-        """
-            uses standard SCPI cmd `:SYST:ERR?` to see if there are errors in the queue
-        """
-        cmd = ':SYST:ERR?'
-        err = self.resource.query(cmd)
+    # @abstractmethod
+    # def check_instr_error_queue(self, print_output=False):
+    #     """
+    #         uses standard SCPI cmd `:SYST:ERR?` to see if there are errors in the queue
+    #     """
+    #     cmd = ':SYST:ERR?'
+    #     err = self.resource.query(cmd)
             
-        if print_output is True:
-            self.print_debug(err)
-            self.print_debug(f"checking instr error queue:    {err}")
+    #     # Check that there were no errors
+    #     try:
+    #         status, description = err.split(',')
+    #     except:
+    #         self.print_debug(f"\nfailed check_instr_error_queue -> {err}\n")
+    #         status, description = '0', '???'
+    #         ret = self.resource.query(cmd)
+    #         return ret
+            
+    #     if print_output is True:
+    #         self.print_debug(err)
+    #         self.print_debug(f"checking instr error queue:    {err}")
         
-        if err is None:
-            self.print_console("WARNING -> Query error queue has returned None!?")
-            status, description = '0', 'Query error queue returned None'
-        else:
-            # Check that there were no errors
-            status, description = err.split(',')
-            
-        return status, description
+    #     if err is None:
+    #         self.print_console("WARNING -> Query error queue has returned None!?")
+    #         status, description = '0', 'Query error queue returned None'
+        
+    #     return status, description
     
     def hard_reset(self):
         """ 
@@ -350,12 +371,14 @@ class BaseDriver():
         self.rm = self.open_pyvisa_backend()
         if self.rm is None: 
             self.handle_InvalidSession_error()
-            
+        
         time.sleep(1)
         self.resource = self.open_pyvisa_resource()
         if self.resource is None: 
             self.handle_InvalidSession_error()
     
+    def strip_specials(self, msg):
+        return msg.replace("\\r","").replace("\\n","")
         
     ####################################################
     ###############  debugging utilities  ##############

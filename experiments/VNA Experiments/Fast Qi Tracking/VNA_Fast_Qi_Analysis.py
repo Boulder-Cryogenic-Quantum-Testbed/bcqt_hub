@@ -213,12 +213,12 @@ for key, processed_data_dict in processed_data.items():
     # 1/Qi = 1/Q - cos(phi)/|Qc|
     # Qi = 1/(1/Q - cos(phi)/|Qc|)
     
-    Q, Qc, fc, phi = params
-    Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, fc_err = conf_intervals
+    Q, Qc, f_center, phi = params
+    Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, f_center_err = conf_intervals
     
     Qi = 1/(1/Q - np.cos(phi)/np.abs(Qc))
     
-    params = [Q, Qi, Qc, fc, phi]
+    params = [Q, Qi, Qc, f_center, phi]
     
     parameters_dict = {
         "power" : power,
@@ -228,8 +228,8 @@ for key, processed_data_dict in processed_data.items():
         "Qi_err" : Qi_err,
         "Qc" : Qc,
         "Qc_err" : Qc_err,
-        "fc" : fc,
-        "fc_err" : fc_err,
+        "f_center" : f_center,
+        "f_center_err" : f_center_err,
         "phi" : phi,
         "phi_err" : phi_err,
     }

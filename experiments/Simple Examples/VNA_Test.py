@@ -106,7 +106,7 @@ def plot_data_with_pandas(freqs, magn_dB, phase_deg=None, phase_rad=None, ax=Non
 ## TODO: This should go in the ExptConfig object
 Expt_Config = {
     "points" : 50,
-    "fc" : 6445962657.0,
+    "f_center" : 6445962657.0,
     "span" : 1.5e6,
     "if_bandwidth" : 200,
     "power" : -50,

@@ -79,7 +79,7 @@ class SG_Anritsu(BaseDriver):
     # ~~~~~~~~~
 
     def get_power(self):
-        return self.query_check(f'SOUR:POW:LEV:IMM:AMPL?', fmt=int)
+        return self.query_check(f'SOUR:POW:LEV:IMM:AMPL?', fmt=float)
         
     def set_power(self, power_dBm : float, override_safety=False):
         

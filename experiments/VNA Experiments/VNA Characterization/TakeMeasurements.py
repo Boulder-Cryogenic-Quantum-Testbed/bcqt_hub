@@ -154,10 +154,11 @@ Measurement_Configs = {
     "f_start" : 2e9,
     "f_stop" : 10e9,
     "n_pts" : 10001,
-    "if_bw" : 1000,
+    "if_bw" : 5000,
     "power" : -50,
-    "averages" : 2,
-    "sparam" : ['S11', 'S21'], 
+    "averages" : 3,
+    # "sparam" : ['S11', 'S21'],  
+    "sparam" : ['S11', 'S21', "S12", "S22"],  
     
     # by default, sparam = 'all', edelay = 0, averages = 10
 }
@@ -184,7 +185,7 @@ PNA_X.setup_s2p_measurement()
 
 
 # %%
-PNA_X.run_measurement()
+# PNA_X.run_measurement()
 
 """
     DownloadMeasurement
@@ -201,8 +202,8 @@ all_axes = qh.plot_s2p_df(s2p_df)
     return filename, final_path.parent
 """
 save_dir = "./cooldown57"
-expt_category = "RT Calibration"
-meas_name = "normalize_background"
+expt_category = "RT Measurements"
+meas_name = "Line6_Rg_TaNb_Qb01"
 
 filename, filepath = Archive_Data(PNA_X, s2p_df, meas_name=meas_name, expt_category=expt_category, all_axes=all_axes)
 

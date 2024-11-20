@@ -39,12 +39,30 @@ def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_e
     # remove first row of datetimes 
     fixed_df, timestamp = strip_first_row_datetimes(df)
     
+    for col in df:
+        if "complex" in col:
+            cmplx = fixed_df[col].astype(complex).values
+            magn_lin = np.abs(cmplx)
+            magn_dB = 20 * np.log10(magn_lin/1e3)
+            phase_rad = np.angle(magn_lin)
+            
+            magn_dB_str = col.replace("complex", "magn_dB")
+            phase_rad_str = col.replace("complex", "phase_rad")
+            
+            fixed_df[magn_dB_str] = np.log10(magn_dB)
+            fixed_df[phase_rad_str] = np.log10(phase_rad)
+            
+            # remove original column
+            fixed_df.drop(columns=col, inplace=True)
+            
+            fixed_df["Frequency"] = fixed_df["Frequency"].to_numpy().real 
+    
     # grab the first three letters of each column
     # then count duplicates so we have a list of all s-parameters
     all_col_sparams = [col[:3] for col in fixed_df.columns]
     sparams = list(set([x for x in all_col_sparams if all_col_sparams.count(x) > 1]))
     
-    freqs = fixed_df["Frequency"].values.astype(float)
+    freqs = fixed_df["Frequency"].apply(lambda x: x.real) 
 
     # now go through all the s-parameters and grab the magn and phase data using filter()
     all_axes = []
@@ -174,18 +192,13 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
         ax1.set_title(f"Frequency vs Magnitude")
         ax2.set_title(f"Frequency vs Phase")
     
-        
     # magn and phase
     ax1.plot(new_freqs, magn_dB, ".", color=magn_color, markersize=3, label=magn_label)
     ax2.plot(new_freqs, phase_rad, ".", color=phase_color, markersize=3, label=phase_label)
 
-
-
     ax1.set_ylabel("S21 [dB]")
     ax2.set_ylabel("Phase [Rad]")
     
-    
-        
     if plot_complex is False:
         if ax3 is not None:
             fig.delaxes(ax3)
