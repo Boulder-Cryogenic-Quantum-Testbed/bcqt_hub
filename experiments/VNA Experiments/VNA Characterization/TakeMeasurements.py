@@ -18,29 +18,12 @@ dstr = datetime.today().strftime("%m_%d_%I%M%p")
 current_dir = Path(".")
 script_filename = Path(__file__).stem
 
-# %% create folders and make path
-
-# lazy way to import modules - just append to path... TODO: fix via proper __init__.py :)
-
-msmt_code_path = Path(r"../../..").resolve()
-experiment_path = Path("..").resolve().parent
-src_path = msmt_code_path / "src"
-driver_path = msmt_code_path / "drivers"
-instr_path = driver_path / "instruments"
-
-all_paths = [current_dir, experiment_path, msmt_code_path, src_path, driver_path, instr_path]
-
-# make sure all paths exist, then append to $PATH
-for path in all_paths:
-    path = path.resolve()  # convert relative Path objs to absolutes
-    print(f"Checking if path exists:  ['{path}']")
-    print(f"     {str(path.exists()).upper()}")
-    sys.path.append(str(path))
+sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 
 # %%
-
-import quick_helpers as qh
-from VNA_Keysight import VNA_Keysight
+from bcqt_hub.src.modules.DataAnalysis import DataAnalysis
+import bcqt_hub.experiments.quick_helpers as qh
+from bcqt_hub.src.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 VNA_Keysight_InstrConfig = {
     "instrument_name" : "VNA_Keysight",
@@ -54,16 +37,15 @@ VNA_Keysight_InstrConfig = {
     "power" : -50,
     "edelay" : 0,
     "averages" : 2,
-    # "sparam" : ['S12'],  # do not want to measure S12 in VNA two port mode
-    "sparam" : ['S11', 'S22', 'S21', 'S12'],  # do not want to measure S12 in VNA two port mode
-    # "sparam" : ['S12', 'S21'],  # do not want to measure S12 in VNA two port mode
+    "sparam" : ['S11', 'S21'],  
     
-    "segment_type" : "linear",
+    # "segment_type" : "linear",
+    "segment_type" : "hybrid",
 }
 
 PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
 
-PNA_X.set_instr_params(VNA_Keysight_InstrConfig)
+PNA_X.init_configs(VNA_Keysight_InstrConfig)
 
 # %%
 
@@ -148,34 +130,31 @@ def Load_CSV(filepath):
 
     
     #########################
+
 # %%
 
 Measurement_Configs = {
-    "f_start" : 2e9,
-    "f_stop" : 10e9,
-    "n_pts" : 10001,
+    "f_center" : 5.863250e9,
+    "f_span" : 0.1e6,
+    "n_points" : 10001,
     "if_bw" : 5000,
     "power" : -50,
-    "averages" : 3,
-    # "sparam" : ['S11', 'S21'],  
-    "sparam" : ['S11', 'S21', "S12", "S22"],  
-    
-    # by default, sparam = 'all', edelay = 0, averages = 10
+    "averages" : 2,
+    "sparam" : ['S11', 'S21'],  
 }
 
 
-
 PNA_X.check_instr_error_queue()
-# PNA_X.add_kwargs_and_filter_configs()
+PNA_X.filter_configs()
 
 """
     ResetVNA
         Resets the VNA to default configs, then passes any kwargs to the configs,
         and then sets up the s2p measurement.
 """
-PNA_X.set_instr_params(Measurement_Configs)
-PNA_X.get_instr_params()
-
+PNA_X.update_configs(**Measurement_Configs)
+# PNA_X.get_instr_params()
+display(PNA_X.configs)
 
 """
     PerformMeasurement
@@ -185,7 +164,7 @@ PNA_X.setup_s2p_measurement()
 
 
 # %%
-# PNA_X.run_measurement()
+PNA_X.run_measurement() 
 
 """
     DownloadMeasurement
@@ -202,8 +181,8 @@ all_axes = qh.plot_s2p_df(s2p_df)
     return filename, final_path.parent
 """
 save_dir = "./cooldown57"
-expt_category = "RT Measurements"
-meas_name = "Line6_Rg_TaNb_Qb01"
+expt_category = "Fast_Qi_Measurements"
+meas_name = "Line4_TonyTa_NbSi_03"
 
 filename, filepath = Archive_Data(PNA_X, s2p_df, meas_name=meas_name, expt_category=expt_category, all_axes=all_axes)
 

@@ -376,7 +376,7 @@ class BaseDriver():
             self.handle_InvalidSession_error()
     
     def strip_specials(self, msg):
-        return msg.replace("\\r","").replace("\\n","")
+        return msg.replace("\\r","").replace("\\n","").replace("+","")
         
     ####################################################
     ###############  debugging utilities  ##############

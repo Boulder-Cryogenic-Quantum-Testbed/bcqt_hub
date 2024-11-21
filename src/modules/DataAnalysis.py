@@ -102,8 +102,8 @@ class DataAnalysis():
         myres.plot = 'png'
         
         freqs = data_df["Frequency"].values
-        magn_dB = data_df["S21 [dB]"].values
-        phase_rad = data_df["Phase [rad]"].values
+        magn_dB = data_df["S21 magn_dB"].values
+        phase_rad = data_df["S21 phase_rad"].values
         magn_lin = 10 ** (magn_dB / 20)
         
         

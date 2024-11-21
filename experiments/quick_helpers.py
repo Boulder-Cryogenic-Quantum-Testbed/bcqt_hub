@@ -58,11 +58,11 @@ def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_e
             fixed_df["Frequency"] = fixed_df["Frequency"].to_numpy().real 
     
     # grab the first three letters of each column
-    # then count duplicates so we have a list of all s-parameters
+    # then remove duplicates so we have a list of all s-parameters
     all_col_sparams = [col[:3] for col in fixed_df.columns]
     sparams = list(set([x for x in all_col_sparams if all_col_sparams.count(x) > 1]))
     
-    freqs = fixed_df["Frequency"].apply(lambda x: x.real) 
+    freqs = fixed_df["Frequency"].apply(lambda x: x.real)  # force freq to be a float
 
     # now go through all the s-parameters and grab the magn and phase data using filter()
     all_axes = []
