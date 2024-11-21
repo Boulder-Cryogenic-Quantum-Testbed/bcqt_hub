@@ -203,7 +203,7 @@ for pump_power in sweep_pump_powers:
     SG_MG3692C.set_output(True)
 
     # prepare instrument
-    PNA_X.set_instr_params(VNA_Keysight_InstrConfig)
+    PNA_X.init_configs(VNA_Keysight_InstrConfig)
     PNA_X.get_instr_params()
 
     # Take data

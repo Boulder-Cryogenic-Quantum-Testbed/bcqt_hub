@@ -124,7 +124,7 @@ all_dfs = {}
 # %%
  
 Expt_Config["segments"] = PNA_X.compute_homophasal_segments(**Expt_Config)
-PNA_X.set_instr_params(Expt_Config)
+PNA_X.init_configs(Expt_Config)
 PNA_X.get_instr_params()
 PNA_X.setup_measurement()
 PNA_X.check_instr_error_queue()

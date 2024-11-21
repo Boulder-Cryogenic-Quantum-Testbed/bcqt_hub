@@ -33,10 +33,43 @@ class VNA_Keysight(BaseDriver):
     
     
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~  get/set Instr Parameters
+    # ~~~  config dict methods
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    def set_scattering_parameters(self):
+    def init_configs(self, InstrConfig_Dict=None):
+        
+        # create an empty config dict if missing
+        if "configs" not in dir(self):
+            self.configs = {}
+        
+        ############################
+        #### s-parameters
+        ############################
+        self.print_debug("setting scattering params")
+        self.update_sparam_configs()
+        
+        ############################
+        #### freq bounds
+        ############################
+        self.determine_frequency_bounds()
+        
+    def update_configs(self, **kwargs):
+        
+        self.configs.update(kwargs)
+        
+        f_choices = [x for x in kwargs if x in ["f_center", "f_span", "f_start", "f_stop"]]
+        if len(f_choices) == 1 or len(f_choices) == 2:
+            f_choice = f_choices[0]
+        else:
+            self.print_debug("Found more than two choices from [f_center/f_span] and [f_start/f_stop]!")
+            self.print_debug("Defaulting to [f_start/f_stop] for frequency bounds...")
+            f_choice = 'f_start'
+            
+        self.determine_frequency_bounds(f_choice=f_choice)
+        self.filter_configs()
+        
+    
+    def update_sparam_configs(self):
         """
             look inside configs for s-param definition, and make sure that
                 they are valid + are in a list, especially if there is only
@@ -44,6 +77,7 @@ class VNA_Keysight(BaseDriver):
              
             also parses 'all' to all four s parameters.
         """
+        
         if "sparam" in self.configs:
             measure_sparam = self.configs["sparam"]
         elif "sparams" in self.configs:
@@ -60,134 +94,23 @@ class VNA_Keysight(BaseDriver):
             
         # overwrite configs
         self.configs["sparam"] = measure_sparam
-        return measure_sparam
-    
-    # TODO: set_instr_params vs add_filter_kwargs are redundant
-    def set_instr_params(self, InstrConfig_Dict=None):
-        
-        ########################################################
-        ########################################################
-        #### first update config dict:
-        ####    has extra logic for checking if new configs
-        ####    already exist, and runs some other methods
-        ####    to assist with proper configuration
-        ########################################################
-        ########################################################
-        
-        # create an empty config dict if none exist
-        if "configs" not in dir(self):
-            self.configs = {}
-        
-        # if None was passed, just set configs = existing configs
-        if InstrConfig_Dict is None:
-            configs = self.configs
-        else:
-            configs = InstrConfig_Dict
-        
-        # check if new configs match old configs, and if so, overwrite
-        # if they don't match, overwrite anyway, but print mismatches
-        if self.configs.keys() == configs.keys():
-            self.print_debug("set_instr_params: new config has the same keys as existing config, overwriting entries")
-            self.configs = configs
-        else:
-            # check every key in one list against all keys in the other list, announce keys that are new
-            old_keys, new_keys = self.configs.keys(), configs.keys()
-            for new in new_keys:
-                if new not in old_keys:
-                    self.print_debug(f"set_instr_params: '{new} not found in existing config dict! Adding to configs")
-                else:
-                    self.print_debug(f"set_instr_params: '{new}' already in config with value [{self.configs[new]}. Overwriting with [{configs[new]}]")
-                
-                self.configs[new] = configs[new]
-                
-        ############################
-        #### s-parameters
-        ############################
-        self.print_debug("setting scattering params")
-        self.set_scattering_parameters()
-        
-        ############################
-        #### freq bounds
-        ############################
-        freq_bounds = self.determine_frequency_bounds()
-        self.add_kwargs_and_filter_configs(**freq_bounds)
-        
-        
         
     
-    def get_instr_params(self):
-        
-        """ 
-            this method doesnt make any sense as it is - why not just get self.configs?
-            the only way it should exist is if it actually asks the instrument what
-            its parameters are, and that's what 'return_instrument_parameters' is for
-        """
-    
-        # if hasattr(self, "configs") is not True:
-        #     # TODO: make a warning feature
-        #     self.print_console("get_instr_params called without having configured any parameters", prefix="[WARNING]")
-        #     return None
-        
-        # power = self.configs["power"]
-        # n_pts = self.configs["n_pts"]
-        # averages = self.configs["averages"]
-        # if_bandwidth = self.configs["if_bandwidth"]
-        # edelay = self.configs["edelay"]
-        # sparam = self.configs["sparam"]
-        
-        # # TODO: check for f_center/f_span vs f_start/f_stop
-        # f_center = self.configs["f_center"]
-        # f_span = self.configs["f_span"]
-        
-        # all_params = { 
-        #              "power" : power , 
-        #              "f_center" : f_center , 
-        #              "f_span" : f_span , 
-        #              "n_pts" : n_pts , 
-        #              "averages" : averages , 
-        #              "if_bandwidth" : if_bandwidth , 
-        #              "edelay" : edelay , 
-        #              "sparam" : sparam ,
-        #             }
-        
-        # for k, v in all_params.items():
-        #     self.print_console(f" {k} = {v}")
-        
-        # for k, v in self.configs.items():
-        #     self.print_console(f" {k} = {v}")
-        
-        # return configs
-        return Exception("Not implemented, needs to call all 'get_xyz_param' methods")
-        # raise NotImplemented
-        
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~  Instr Methods
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    def create_sweep(self):
-        
-        # if segments:
-        #     num_segments = len(segments)
-        #     seg_data = ''.join([s for s in segments])
-        #     self.write_check(f"SENSe1:SWEep:TYPE SEGment")
-        #     self.write_check(f'SENSe1:SEGMent:LIST SSTOP, {num_segments}{seg_data}')
-        # else:
-        #     self.write_check("SENSe1:SWEep:TYPE LINear")
-        #     self.write_check(f'SENSe1:SWEep:POINts {n_pts}')
-        #     self.write_check(f'SENSe1:FREQuency:CENTer {f_center}HZ')
-        #     self.write_check(f'SENSe1:FREQuency:SPAN {f_span}HZ')
-
-        #     self.write_check(f'SENSe1:SWEep:TIME:AUTO ON')
-            
-        pass
-    
-    
-    def determine_frequency_bounds(self):
+    def determine_frequency_bounds(self, f_choice=None):
         """
             Search configs for f_center/f_span, or f_start/f_stop,
                 and then make sure that both pairs of values are
                 saved to the config. Additionally return
         """
+        # if f_choice is given, then use that to calculate start/stop/center/span
+        if f_choice in ["f_center", "f_span"]:
+            self.print_debug(f"[using center/span] {f_choice = }")
+            try: del self.configs["f_start"], self.configs["f_stop"]
+            except: pass
+        elif f_choice in ["f_start", "f_stop"]:
+            self.print_debug(f"[using start/stop] {f_choice = }")
+            try: del self.configs["f_center"], self.configs["f_span"]
+            except: pass
         
         # get bounds by looking for f_center/f_span or f_start/f_stop!
         if "f_center" in self.configs and "f_span" in self.configs:
@@ -220,14 +143,10 @@ class VNA_Keysight(BaseDriver):
             "f_span" : f_span,
         }
         
-        return freq_bounds
+        self.configs.update(**freq_bounds)
     
     
-    def add_kwargs_and_filter_configs(self, **kwargs):
-        if len(kwargs) != 0:
-            self.print_console(f"Adding the following kwargs to the configs:  \n{kwargs}")
-            self.configs = {**self.configs, **kwargs}
-        
+    def filter_configs(self):
         # backwards compatability, remove lazy kwargs
         if "fc" in self.configs:
             self.configs["f_center"] = self.configs["fc"]
@@ -235,9 +154,9 @@ class VNA_Keysight(BaseDriver):
         if "span" in self.configs:
             self.configs["f_span"] = self.configs["span"]
             del self.configs["f_span"]
-        for name in ["points", "n_points"]:
+        for name in ["points", "n_pts"]:
             if name in self.configs:
-                self.configs["n_pts"] = self.configs[name]
+                self.configs["n_points"] = self.configs[name]
                 del self.configs[name]
         
         # check all kwargs if their equivalent without underscores exists
@@ -251,13 +170,32 @@ class VNA_Keysight(BaseDriver):
                     self.configs[name] = self.configs[name_pruned]
                     entries_to_remove.append(name_pruned)
                 
-        # double check that the sparam have been parsd
-        self.set_scattering_parameters()    
-    
         # remove all
         for k in entries_to_remove:
             self.configs.pop(name_pruned)
         
+        
+        
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~  get/set Instr Parameters
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    
+    def get_instr_params(self):
+        
+        """ 
+            this method doesnt make any sense as it is - why not just get self.configs?
+            the only way it should exist is if it actually asks the instrument what
+            its parameters are, and that's what 'return_instrument_parameters' is for
+        """
+    
+        return Exception("Not implemented, needs to call all 'get_xyz_param' methods")
+        
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~  Instr Methods
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    
     def compute_homophasal_segments(self, Noffres=None, segment_type=None, **kwargs):
         """
             Computes segments needed to perform homophasal measurements
@@ -274,12 +212,18 @@ class VNA_Keysight(BaseDriver):
         else:
             segment_type = 'homophasal'
         
+        if "Noffres" in self.configs:
+            Noffres = self.configs["Noffres"]
+        elif Noffres is None and "Noffres" not in self.configs:
+            self.print_console("Using default Noffres = 5")
+            Noffres = 5
+        
         # load kwargs into vna configs
-        self.add_kwargs_and_filter_configs(**kwargs)
+        self.filter_configs(**kwargs)
         
         f_center = self.configs["f_center"]
         f_span = self.configs["f_span"]
-        n_pts = self.configs["n_pts"]
+        n_points = self.configs["n_points"]
         
         # conversion factor for MHz -> Hz
         fscale = 1 if f_center >= 1e6 else 1e6
@@ -296,7 +240,7 @@ class VNA_Keysight(BaseDriver):
         
         # determine homophasa  XXX: does it matter we always default to pi/32?
         theta0 = np.pi / 32
-        Nf = 30 if n_pts is None else n_pts
+        Nf = 30 if n_points is None else n_points
         theta = np.linspace(-np.pi + theta0, (np.pi - theta0), Nf + 2)
         freq = f_center * (1 - 0.5 * np.tan(theta / 2) / Q)           
         
@@ -321,7 +265,7 @@ class VNA_Keysight(BaseDriver):
                         f',1,{Noffres},{fa},{fstart*fscale}']
         elif segment_type == 'linear':
             # simple linear sweep
-            segments = [f',1,{n_pts},{fstop*fscale}, {fstart*fscale}']
+            segments = [f',1,{n_points},{fstop*fscale}, {fstart*fscale}']
             
         else:
             raise ValueError("Missing segment_type in compute_homophasal_segments for VNA_Keysight driver.")
@@ -337,7 +281,7 @@ class VNA_Keysight(BaseDriver):
         
         if Expt_Config is not None:
             self.print_console("Updating Expt_Config...")
-            self.set_instr_params(Expt_Config)
+            self.init_configs(Expt_Config)
         
         self.print_console("Initializing VNA for all four s-parameter measurement...")
         # self.write_check('*RST')
@@ -356,8 +300,8 @@ class VNA_Keysight(BaseDriver):
         if measurements != 'NO CATALOG':
             self.write_check('CALC1:PARameter:DELete:ALL')
         
-        # just in case they have not been set yet, but should be by set_instr_params()
-        measure_sparam = self.set_scattering_parameters()
+        # just in case they have not been set yet, but should be by init_configs()
+        measure_sparam = self.configs['sparam']
         
         # create measurements, create vna display windows, and set all of them to log format
         for idx, sparam in enumerate(measure_sparam):
@@ -420,7 +364,7 @@ class VNA_Keysight(BaseDriver):
         
         if Expt_Config is not None:
             self.print_console("Updating Expt_Config...")
-            self.set_instr_params(Expt_Config)
+            self.init_configs(Expt_Config)
         
         self.print_console("Initializing VNA...")
         self.write_check('*RST')
@@ -451,7 +395,7 @@ class VNA_Keysight(BaseDriver):
             self.write_check(f'SENSe1:SEGMent:LIST SSTOP, {num_segments}{seg_data}')
         else:
             self.write_check("SENSe1:SWEep:TYPE LINear")
-            self.write_check(f'SENSe1:SWEep:POINts {self.configs["n_pts"]}')
+            self.write_check(f'SENSe1:SWEep:POINts {self.configs["n_points"]}')
             self.write_check(f'SENSe1:FREQuency:CENTer {self.configs["f_center"]}HZ')
             self.write_check(f'SENSe1:FREQuency:SPAN {self.configs["f_span"]}HZ')
             self.write_check(f'SENSe1:SWEep:TIME:AUTO ON')
@@ -487,42 +431,35 @@ class VNA_Keysight(BaseDriver):
             Run the measurement and continuously query until it reports finished
         """
             
-        # initiate display and turn on output
-        # self.write_check('OUTPut:STATe ON')
+        self.write_check('*CLS')
         
-        # self.write_check('SENS1:SWE:MODE SINGle')  
-        # self.query_check('*OPC?')  
-        # self.write_check('INIT:IMM')  # just use INIT:IMM to trigger one sweep
-        self.write_check('FORMat ASCII')
-        # self.write_check('DISPlay:WINDow1:Y:AUTO')
-        # self.write_check('DISPlay:WINDow2:Y:AUTO')
-
         # initiate display and turn on output
-        # self.write_check('OUTPut:STATe ON')
-        # self.write_check('ABORT;INITIATE:IMMEDIATE')  # just use INIT:IMM to trigger one sweep
-        # self.write_check('FORMat ASCII')
-        # self.write_check('DISPlay:WINDow1:Y:AUTO')
-        # self.write_check('DISPlay:WINDow2:Y:AUTO')
-                
-                
         self.write_check('OUTPut:STATe ON')
+        self.write_check('INITiate:CONTinuous OFF')
+        self.write_check('FORMat ASCII')
+        self.write_check('DISPlay:WINDow1:Y:AUTO')
+        self.write_check('DISPlay:WINDow2:Y:AUTO')
+    
+        # self.write_check('SENS1:SWE:MODE SINGle')  
+        # self.write_check('INIT:IMM')  # just use INIT:IMM to trigger one sweep
         self.write_check('INITiate:CONTinuous ON')
-        # self.write_check('FORMat ASCII')
-        # self.write_check('DISPlay:WINDow1:Y:AUTO')
-        # self.write_check('DISPlay:WINDow2:Y:AUTO')
         
-        
+        # initiate display and turn on output
+        self.write_check('FORMat ASCII')
+        self.write_check('DISPlay:WINDow1:Y:AUTO')
+        self.write_check('DISPlay:WINDow2:Y:AUTO')
+                
         # check if the VNA has finished every second, in my experience the *OPC? or *WAI command isnt very reliable
         check = False
         tstart = time.time()   
-        
+            
         while check is False:
             time.sleep(0.05)
             t_elapsed = time.time() - tstart
             
             # check_str is a string, "0" = busy or "1" = complete
-            check_str = self.strip_specials(self.query_check('STAT:OPER:AVER1:COND?'))[1]
-            print(f"\n      Time elapsed: [{t_elapsed:1.2f}s]  {check_str=}", end="\r")
+            check_str = self.strip_specials(self.query_check('STAT:OPER:AVER1:COND?'))[0]
+            print(f"\n      Time elapsed: [{t_elapsed:1.2f}s]  {check_str=}\r", end="\r")
             
             # once it is "1", print that we're finished
             if check_str != "0":
@@ -588,7 +525,7 @@ class VNA_Keysight(BaseDriver):
             f_stop = self.query_check('SENSe1:FREQuency:STOP?', fmt=float)
             freqs = np.linspace(f_start, f_stop, n_points)
         
-        self.set_scattering_parameters()
+        self.update_sparam_configs()
         
         data_dict = {}
         for idx, sparam in enumerate(self.configs["sparam"]):
@@ -659,7 +596,7 @@ class VNA_Keysight(BaseDriver):
     def take_single_trace(self, Expt_Config = None):
         """
             (0) before running this, the instrument should already have 
-                - set_instr_params()
+                - init_configs()
                 - setup_measurement()
             (1)
         """
@@ -671,7 +608,7 @@ class VNA_Keysight(BaseDriver):
         #     self.configs = Expt_Config
         #
         # self.configs["segments"] = self.compute_homophasal_segments(**self.configs)
-        # self.set_instr_params(Expt_Config)
+        # self.init_configs(Expt_Config)
         # self.get_instr_params()
         # self.setup_measurement()
         # self.check_instr_error_queue()
