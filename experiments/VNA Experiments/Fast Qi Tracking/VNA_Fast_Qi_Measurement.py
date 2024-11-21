@@ -20,18 +20,11 @@ script_filename = Path(__file__).stem
 
 # %% create folders and make path
 
-# lazy way to import modules - just append to path... TODO: fix via proper __init__.py :)
-
-msmt_code_path = Path(r"../../..").resolve()
-experiment_path = Path("../..").resolve()
-src_path = msmt_code_path / "src"
-driver_path = msmt_code_path / "drivers"
-instr_path = driver_path / "instruments"
-data_path = current_dir / "data" / script_filename / dstr 
+data_path = current_dir / "data" / dstr
 csv_path = data_path / "raw_csvs"
 dcm_path = data_path / "dcm_fits"
 
-all_paths = [current_dir, experiment_path, msmt_code_path, src_path, driver_path, instr_path, data_path, csv_path, dcm_path]
+all_paths = [current_dir, data_path, csv_path, dcm_path]
 
 # make sure all paths exist, then append to $PATH
 for path in all_paths:
@@ -44,54 +37,54 @@ for path in all_paths:
         path.mkdir(parents=True, exist_ok=True)
         print(f"       ->  Created! Path now exists. [{path.exists() = }]")
     
-    sys.path.append(str(path))
-
+    # sys.path.append(str(path))
 
 # %%
-from src.DataAnalysis import DataAnalysis
-from VNA_Keysight import VNA_Keysight
-from quick_helpers import unpack_df, plot_data_with_pandas
-# from DataAnalysis import DataAnalysis
 
-all_f_centers =  [ #5.733901e9,
-             #5.773425e9,
-             #5.822726e9,
-             5.863280e9,
-            
-             #6.256667811e9,   # sucks, doesnt saturate
-             #6.306375544e9,   # saturates around -78 dBm
-             #6.360336e9,
-             #6.417038e9
-            ]
+sys.path.append(r"C:\\Users\\Lehnert Lab\\GitHub")
+import bcqt_hub
+# import bcqt_hub.src.drivers
 
+from bcqt_hub.src.drivers.instruments.VNA_Keysight import VNA_Keysight
+
+all_f_centers = [5.863254e9]
 VNA_Keysight_InstrConfig = {
     "instrument_name" : "VNA_Keysight",
     "rm_backend" : None,
     "instr_address" : 'TCPIP0::192.168.0.105::inst0::INSTR',
-    "points" : 51,
-    # "f_center" : all_f_centers[0],
-    "f_span" : 0.5e6,
-    "if_bandwidth" : 25000,
-    "power" : -50,
-    "edelay" : 76.36,
-    "averages" : 2,
+    "power" : -84,
+    "averages" : 100,
     "sparam" : ['S21'],
+    "edelay" : 50,
     
-    # "segment_type" : "homophasal",
     "segment_type" : "hybrid",
-    "Noffres" : 15
+    
+    "f_center" : all_f_centers[0],
+    "f_span" : 0.05e6,
+    "n_points" : 41,
+    "Noffres" : 10,
+    "if_bandwidth" : 500,
 }
 
-PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
+if "PNA_X" not in locals():
+    PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
 
-if "all_dfs" not in locals().keys():
+if "all_dfs" not in locals():
     all_dfs = {}
     
+PNA_X.check_instr_error_queue()
+PNA_X.filter_configs()
+PNA_X.update_configs(**VNA_Keysight_InstrConfig)
+PNA_X.setup_s2p_measurement()
+display(PNA_X.configs)
+
+from bcqt_hub.src.modules.DataAnalysis import DataAnalysis
+import bcqt_hub.experiments.quick_helpers as qh
 
 # %%
 
-sets = 1
-num_msmt_per_set = 1
+sets = 2
+num_msmt_per_set = 1400
 
 start_time = time.time()
 
@@ -99,96 +92,91 @@ start_time = time.time()
 for set_idx in range(sets): 
     
     for res_idx, f_center in enumerate(all_f_centers):
+        PNA_X.setup_s2p_measurement()
     
         PNA_X.configs["f_center"] = f_center
         PNA_X.compute_homophasal_segments()
-        
         
         fit_results = {}
         res_start_time = time.time()
         
         for idx in range(num_msmt_per_set):
         
-            PNA_X.set_instr_params(VNA_Keysight_InstrConfig)
+            PNA_X.init_configs(VNA_Keysight_InstrConfig)
             PNA_X.configs["time_start"] = datetime.now()
             
-            # PNA_X.setup_measurement()
             PNA_X.check_instr_error_queue()
             PNA_X.setup_s2p_measurement()
             PNA_X.run_measurement()
-            freqs, magn_dB, phase_deg = PNA_X.return_data()
+                        
+            s2p_df_2 = PNA_X.return_data_s2p()
+            axes = qh.plot_s2p_df(s2p_df_2)
+            s2p_df, _ = qh.strip_first_row_datetimes(s2p_df_2)
+            s2p_df = s2p_df.astype(float)
             
-            # freqs, magn, phase = PNA_X.take_single_trace(PNA_X.configs)
-
-            df, fig, axes = plot_data_with_pandas(freqs, magn_dB, phase_deg=phase_deg)
-
-            title_str = str(f"{PNA_X.configs["span"]/1e6:1.2f}MHz_span_{PNA_X.configs["averages"]}_avgs_{PNA_X.configs["if_bandwidth"]}_IFBW_{PNA_X.configs["power"]}_dBm")
-            fig = axes["A"].get_figure()
+            title_str = str(f"{PNA_X.configs["f_span"]/1e6:1.2f}MHz_span_{PNA_X.configs["averages"]}_avgs_{PNA_X.configs["if_bandwidth"]}_IFBW_{PNA_X.configs["power"]}_dBm")
+            fig = axes[0][0].get_figure()
             fig.suptitle(title_str, size=16)
             fig.tight_layout()
             plt.show()
             
-            
-            all_dfs[title_str] = df
+            all_dfs[title_str] = s2p_df
 
-            SingleFit = DataAnalysis(None, dstr)
-
-            f_center, span, ifbw, avg, power = PNA_X.configs["f_center"], PNA_X.configs["span"], PNA_X.configs["if_bandwidth"], PNA_X.configs["averages"], PNA_X.configs["power"]
+            f_center, span, ifbw, avg, power = PNA_X.configs["f_center"], PNA_X.configs["f_span"], PNA_X.configs["if_bandwidth"], PNA_X.configs["averages"], PNA_X.configs["power"]
             name = f"Set{set_idx+1}_Msmt{idx+1}_span_{span/1e3:1.0f}kHz_power_{power}dBm_{avg}_avgs"
 
             res_dir = csv_path / f"Res{res_idx}_{f_center/1e6:1.0f}MHz"
             res_dir.mkdir(parents=True, exist_ok=True)
             filename = str(res_dir / f"{name}.csv")
             
-            # want to add datetime, but must match dimensions, so just add it as first row... oops :)
-            datetime_row = pd.DataFrame({"Frequency" : datetime.now(), "S21 [dB]" : datetime.now(), "Phase [rad]" : datetime.now()}, index=["datetime.now()"])
-            df2 = pd.concat([datetime_row, df.iloc[:]])
-            df2.to_csv(filename)
+            s2p_df.to_csv(filename)
 
-        #     try:
-        #         # output_params, conf_array, error, init, output_path
-        #         params, conf_intervals, err, init1, fig = SingleFit.fit_single_res(data_df=df, save_dcm_plot=False, plot_title=filename, save_path=dcm_path)
-        #     except Exception as e:
-        #         print(f"Failed to plot DCM fit for {power} dBm -> {filename = }")
-        #         print(f"Error: {e}")
-        #         continue
+            # SingleFit = DataAnalysis(None, dstr)
+            
+            # # try:
+            #     # output_params, conf_array, error, init, output_path
+            # params, conf_intervals, err, init1, fig = SingleFit.fit_single_res(data_df=s2p_df, save_dcm_plot=False, plot_title=filename, save_path=dcm_path)
+            # # except Exception as e:
+            # #     print(f"Failed to plot DCM fit for {power} dBm -> {filename = }")
+            # #     print(f"Error: {e}")
+            # #     continue
 
-        #     Q, Qc, f_center, phi = params
-        #     Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, f_center_err = conf_intervals
+            # Q, Qc, f_center, phi = params
+            # Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, f_center_err = conf_intervals
             
-        #     Qi = 1/(1/Q - np.cos(phi)/np.abs(Qc))
+            # Qi = 1/(1/Q - np.cos(phi)/np.abs(Qc))
             
-        #     params = [Q, Qi, Qc, f_center, phi]
+            # params = [Q, Qi, Qc, f_center, phi]
             
-        #     parameters_dict = {
-        #         "power" : power,
-        #         "Q" : Q,
-        #         "Q_err" : Q_err,
-        #         "Qi" : Qi,
-        #         "Qi_err" : Qi_err,
-        #         "Qc" : Qc, 
-        #         "Qc_err" : Qc_err,
-        #         "f_center" : f_center,
-        #         "f_center_err" : f_center_err,
-        #         "phi" : phi,
-        #         "phi_err" : phi_err,
-        #         "meas_time" : PNA_X.configs["time_start"]
-        #     }
+            # parameters_dict = {
+            #     "power" : power,
+            #     "Q" : Q,
+            #     "Q_err" : Q_err,
+            #     "Qi" : Qi,
+            #     "Qi_err" : Qi_err,
+            #     "Qc" : Qc, 
+            #     "Qc_err" : Qc_err,
+            #     "f_center" : f_center,
+            #     "f_center_err" : f_center_err,
+            #     "phi" : phi,
+            #     "phi_err" : phi_err,
+            #     "meas_time" : PNA_X.configs["time_start"]
+            # }
 
-        #     perc_errs = {
-        #         "Q_perc" : Q_err / Q,
-        #         "Qi_perc" : Qi_err / Qi,
-        #         "Qc_perc" : Qc_err / Qc,
-        #     }
+            # perc_errs = {
+            #     "Q_perc" : Q_err / Q,
+            #     "Qi_perc" : Qi_err / Qi,
+            #     "Qc_perc" : Qc_err / Qc,
+            # }
             
         
-            # fit_results[filename] = (df, PNA_X.configs, parameters_dict, perc_errs)
+            # fit_results[filename] = (s2p_df, PNA_X.configs, parameters_dict, perc_errs)
             
-        #     plt.close()
+            # plt.close()
             
         
         # all_param_dicts = {}
-        # for key, (df, PNA_X.configs, parameters_dict, perc_errs) in fit_results.items():
+        # for key, (s2p_df, PNA_X.configs, parameters_dict, perc_errs) in fit_results.items():
         #     all_param_dicts[key] = parameters_dict
         
         # fit_dict_name = str((csv_path / "..").resolve() / f"{f_center/1e3:1.0f}MHz_all_fit_results.csv")
@@ -201,7 +189,7 @@ for set_idx in range(sets):
         
         resonator_elapsed_time = end_time - res_start_time
         total_elapsed_time = end_time - start_time 
-        display(f"Finished Resonator [{res_idx}/{len(all_f_centers)}]! \nSingle resonator elapsed time: {resonator_elapsed_time/60:1.1f} minutes.\nTotal measurement resonator elapsed time: {total_elapsed_time/60:1.1f} minutes.")
+        print(f"Finished Resonator [{res_idx}/{len(all_f_centers)}]! \nSingle resonator elapsed time: {resonator_elapsed_time/60:1.1f} minutes.\nTotal measurement resonator elapsed time: {total_elapsed_time/60:1.1f} minutes.")
             
 
 
