@@ -1,12 +1,6 @@
-from abc import ABC, abstractmethod
-from datetime import datetime
-from pprint import pprint
 from pathlib import Path
-import time, sys
 
-sys.path.append(str(Path("..").resolve()))
-
-from BaseDriver import BaseDriver
+from ..BaseDriver import BaseDriver
 
 
 class SG_Anritsu(BaseDriver):
