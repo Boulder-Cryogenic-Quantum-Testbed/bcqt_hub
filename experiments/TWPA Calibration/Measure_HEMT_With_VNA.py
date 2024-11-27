@@ -24,34 +24,39 @@
 
 from pathlib import Path
 from datetime import datetime
-import sys
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import time, sys
 
 dstr = datetime.today().strftime("%m_%d_%I%M%p")
 current_dir = Path(".")
 script_filename = Path(__file__).stem
 
+sys.path.append(r"C:\\Users\\Lehnert Lab\\GitHub")
+import bcqt_hub
+
 # %% create folders and make path
 
-# lazy way to import modules - just append to path... TODO: fix via proper __init__.py :)
+data_path = current_dir / "data" / dstr
+csv_path = data_path / "raw_csvs"
+dcm_path = data_path / "dcm_fits"
 
-msmt_code_path = Path(r"../..").resolve()
-experiment_path = Path("..").resolve()
-src_path = msmt_code_path / "src"
-driver_path = msmt_code_path / "drivers"
-instr_path = driver_path / "instruments"
-
-all_paths = [current_dir, experiment_path, msmt_code_path, src_path, driver_path, instr_path]
+all_paths = [current_dir, data_path, csv_path, dcm_path]
 
 # make sure all paths exist, then append to $PATH
 for path in all_paths:
     path = path.resolve()  # convert relative Path objs to absolutes
     print(f"Checking if path exists:  ['{path}']")
     print(f"     {str(path.exists()).upper()}")
-    sys.path.append(str(path))
     
+    # ensure our data/fit storage paths exists
+    if path.exists() is False and path in [csv_path.absolute(), data_path.absolute(), dcm_path.absolute()]:
+        path.mkdir(parents=True, exist_ok=True)
+        print(f"       ->  Created! Path now exists. [{path.exists() = }]")
+    
+    # sys.path.append(str(path))
+
 # %%
 def strip_specials(input):
     return input.replace("\\r","").replace("\\n","")
@@ -122,9 +127,9 @@ def Load_CSV(filepath):
 
 # %%
 
-import quick_helpers as qh
-from VNA_Keysight import VNA_Keysight
-from SG_Anritsu import SG_Anritsu
+import bcqt_hub.experiments.quick_helpers as qh
+from bcqt_hub.src.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqt_hub.src.drivers.instruments.SG_Anritsu import SG_Anritsu
 
 VNA_Keysight_InstrConfig = {
     "instrument_name" : "VNA_Keysight",
@@ -135,7 +140,7 @@ VNA_Keysight_InstrConfig = {
     "f_start" : 4e9,
     "f_stop" : 9e9,
     "if_bandwidth" : 5000,
-    "power" : -30,
+    "power" : -30, 
     "edelay" : 0,
     "averages" : 2,
     "sparam" : ['S21'],  
