@@ -21,7 +21,6 @@ parsed_dataset_path = dataset_path.parent / f"{dataset_path.name}_parsed"
 sys.path.append(r"/Users/jlr7/Library/CloudStorage/OneDrive-UCB-O365/GitHub")
 import bcqt_hub
 
-
 # %%
 
 all_datasets = [x for x in dataset_path.glob("*.csv") if "_parsed" not in str(x)]
