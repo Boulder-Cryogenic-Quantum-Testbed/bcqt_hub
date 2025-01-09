@@ -8,6 +8,70 @@ import matplotlib.pyplot as plt
 import scipy as sp
 from datetime import datetime
 
+def archive_data(VNA, s2p_df:pd.DataFrame, meas_name:str, expt_category:str = '', save_dir:str = "./data", all_axes=None):
+    # check if save_dir is a path or string
+    if not isinstance(save_dir, Path):
+        save_dir = Path(save_dir).absolute()
+        
+    timestamp = datetime.today().strftime("%m_%d_%I%M%p")
+    # file_dir = save_dir / expt_category / meas_name / timestamp
+    file_dir = save_dir / expt_category / meas_name
+    
+    # check if file_dir exists
+    if not file_dir.exists():
+        VNA.print_console(f"Creating category {expt_category}")
+        VNA.print_console(f"    under save directory {save_dir}")
+        file_dir.mkdir(exist_ok=True, parents=True)
+    
+    # append number to end of filename and save to csv
+    expt_no = len(list(file_dir.glob("*.csv"))) + 1    
+    filename = f"{meas_name}_{expt_no:03d}.csv"
+    VNA.print_console(f"Saving data as {filename}")
+    VNA.print_console(f"    under '{str(Path(*file_dir.parts[-6:]))}'")
+    
+    final_path = file_dir / filename
+    print(final_path)
+    s2p_df.to_csv(final_path)
+    
+    if all_axes is not None:
+        for axes in all_axes:
+            ax = axes[0]
+            fig = ax.get_figure()
+            title = fig.get_suptitle().replace(" - ","_") + f"{expt_no:03d}.png"
+            fig_filename = file_dir / title
+            fig.tight_layout()
+            fig.savefig(fig_filename)
+            plt.show()
+            print(fig_filename)
+            
+    
+    return filename, final_path.parent
+
+def load_csv(filepath):
+    """
+        convenience method - take csv filepath and return df, magns, phases, and freqs
+    """
+    
+    if not isinstance(filepath, Path):
+        filepath = Path(filepath).absolute()
+    
+    df = pd.read_csv(filepath, index_col=0)
+    
+    all_magns, all_phases = [], []
+    
+    for col in df:
+        if "magn" in col.lower():
+            series = df[col].values[1:]
+            all_magns.append(series)
+        if "phase" in col.lower():
+            series = df[col].values[1:]
+            all_phases.append(series)
+        if "freq" in col.lower():
+            freqs = df[col].values[1:]
+    
+    return df, all_magns, all_phases, freqs
+
+
 ## TODO: these should go in the DataProcessor object
 def unpack_df(df): 
     freqs = df["Frequency"]
