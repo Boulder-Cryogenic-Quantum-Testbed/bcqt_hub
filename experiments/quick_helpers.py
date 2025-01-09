@@ -11,8 +11,16 @@ from datetime import datetime
 ## TODO: these should go in the DataProcessor object
 def unpack_df(df): 
     freqs = df["Frequency"]
-    magn_dB = df["S21 [dB]"]
-    phase_rad = df["Phase [rad]"]
+    try:
+        magn_dB = df["S21 [dB]"]
+    except:
+        magn_dB = df["S21 magn_dB"]
+        
+    try:
+        phase_rad = df["Phase [rad]"]
+    except:
+        phase_rad = df["S21 phase_rad"]
+        
     return freqs, magn_dB, phase_rad
 
 def strip_first_row_datetimes(df):
@@ -37,7 +45,10 @@ def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_e
     """
     
     # remove first row of datetimes 
-    fixed_df, timestamp = strip_first_row_datetimes(df)
+    try:
+        fixed_df, timestamp = strip_first_row_datetimes(df)
+    except:
+        fixed_df = df
     
     for col in df:
         if "complex" in col:

@@ -2,108 +2,62 @@
 """
     Test implementation of DataProcessor (eventually)
 """
+
 from pathlib import Path
 from datetime import datetime
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import time, sys
+import regex as re
 
 current_dir = Path(".")
 script_filename = Path(__file__).stem
-data_dir = current_dir / "data" / "VNA_Fast_Qi_Measurement"
-msmt_code_path = Path(r"../../..").resolve()
-src_path = msmt_code_path / "src"
 
-sys.path.append(str(msmt_code_path))
-sys.path.append(str(msmt_code_path / "Experiments" / "VNA Experiments"))
+dataset_path = Path(r"/Users/jlr7/Documents/fastqi_resonatordata/11_21_1251AM/raw_csvs/Res0_5863MHz")
+parsed_dataset_path = dataset_path.parent / f"{dataset_path.name}_parsed"
 
-
-
-# %% load data if experiment wasn't done
-
-from src.DataAnalysis import DataAnalysis
-import regex as re
+# %%
+sys.path.append(r"/Users/jlr7/Library/CloudStorage/OneDrive-UCB-O365/GitHub")
+import bcqt_hub
 
 # %%
 
-# four stars -> "./data/VNA_Fast_Qi_Measurement/10_31_0950PM/raw_csvs"
-all_datasets = [x for x in (current_dir / "data" ).glob("*/*/*/*") if "_parsed" not in str(x)]
+all_datasets = [x for x in dataset_path.glob("*.csv") if "_parsed" not in str(x)]
+all_datasets =  list(sorted(all_datasets))
 
-for dataset_path in all_datasets:
-    parsed_dataset_path = Path(f"{dataset_path}_parsed")
-    parsed_dataset_path.mkdir(exist_ok=True)
-    csv_list = sorted([x for x in dataset_path.glob("*.csv")])
-    print(f"{len(csv_list)} csv files in {dataset_path.name}")
-
-    csv_files_parsed = len(list(parsed_dataset_path.glob("*.csv")))
-    csv_files_unparsed = len(list(dataset_path.glob("*.csv")))
+sorted_dataset = []
+for csv_file in all_datasets:
+    filename, filepath = csv_file.name, csv_file.parent
+    sorted_dataset.append(new_filepath)
     
-    # check if all data has been parsed
-    if csv_files_parsed == csv_files_unparsed:
-        print(f"All data has been parsed, delete old directory now.")
-    else:
-        print(f"{csv_files_unparsed - csv_files_parsed} new files since last parse.")
+final_dataset = list(sorted(sorted_dataset))
+print(f"{len(final_dataset)} csv files in {dataset_path.name}")
+msmt_num = int(re.search(r"Msmt\d{1,6}", filename).captures()[0].replace("Msmt",""))
 
-dcm_path = (parsed_dataset_path / ".." / ".." / "dcm_fits").resolve()
-csv_path = (parsed_dataset_path / "..").resolve()
 
 # %% read all csvs and parse info from filename and csv contents
+from bcqt_hub.src.modules.DataHandler import DataSet, DataHandler
+import bcqt_hub.experiments.quick_helpers as qh
 
-all_dfs = {}
-for csv_filepath in csv_list:
+parsed_dataset_path.mkdir(exist_ok=True)
+
+all_dsets = []
+for csv_filepath in all_datasets:
     csv_filename = csv_filepath.stem
     
     # lazy lazy lazy
     set_str, msmt_str, _, span_str, _, power_str, avgs, _ = csv_filename.split("_")
     msmt_num = int(re.search(r"\d{1,6}", msmt_str)[0])
+    msmt_num = f"{int(msmt_num):05.0f}"
+    set_msmt = f"{set_str}-Msmt{msmt_num}"
     
-    new_filename = f"{set_str}_Msmt{msmt_num:05.0f}_span_{span_str}_power_{power_str}_{avgs}_avgs.csv"
+    new_filename = f"{set_msmt}_span_{span_str}_power_{power_str}_{avgs}_avgs.csv"
     new_filepath = parsed_dataset_path / new_filename
-
     
-    if new_filepath.exists():
-        # print(f"Skipping {set_str}-{msmt_num}, parsed file exists")
-        pass
-    else:
-        df = pd.read_csv(csv_filepath, index_col=0)
-        
-        basic_configs = {
-            "filename" : csv_filename,
-            "filepath" : csv_filepath.parent,
-            "power" : int(power_str.replace("dBm","")),
-            "span" : int(span_str.replace("kHz",""))*1e3,
-            "set_num" : int(set_str[-1]),
-            "msmt_num" : msmt_num,
-            "avgs" : int(avgs),
-            "dstr" : datetime.fromisoformat(df.iloc[0,0]).strftime("%m_%d_%I%M%p"),
-            "timestamp" : datetime.fromisoformat(df.iloc[0,0]),
-        }
-        
-        print(f"~~~Saving parsed csv for {set_str}-{msmt_num}")
-        df.to_csv(new_filepath)
-
-# %% go through parsed folder
-
-csv_list = sorted([x for x in parsed_dataset_path.glob("*.csv")])
-
-# copy pasted from above
-all_dfs = {}
-for csv_filepath in csv_list:
-    csv_filename = csv_filepath.stem
-    
-    # lazy lazy lazy
-    set_str, msmt_str, _, span_str, _, power_str, avgs, _ = csv_filename.split("_")
-    msmt_num = int(re.search(r"\d{1,6}", msmt_str)[0])
-    set_msmt = f"{set_str}-{msmt_num:05.0f}"
-    
-    new_filename = f"{set_str}_Msmt{msmt_num:05.0f}_span_{span_str}_power_{power_str}_{avgs}_avgs.csv"
-    new_filepath = parsed_dataset_path / new_filename
-
     df = pd.read_csv(csv_filepath, index_col=0)
     
     basic_configs = {
-        "set_msmt" : set_msmt,
         "filename" : csv_filename,
         "filepath" : csv_filepath.parent,
         "power" : int(power_str.replace("dBm","")),
@@ -111,107 +65,80 @@ for csv_filepath in csv_list:
         "set_num" : int(set_str[-1]),
         "msmt_num" : msmt_num,
         "avgs" : int(avgs),
-        "dstr" : datetime.fromisoformat(df.iloc[0,0]).strftime("%m_%d_%I%M%p"),
-        "timestamp" : datetime.fromisoformat(df.iloc[0,0]),
+        # "dstr" : datetime.fromisoformat(df.iloc[0,0]).strftime("%m_%d_%I%M%p"),
+        # "timestamp" : datetime.fromisoformat(df.iloc[0,0]),
     }
     
-    # we can remove the first row of datetime now
-    df.drop(index="datetime.now()", inplace=True)
     
-     # TODO: DataProcessor needs to save config & init params
-    all_dfs[set_msmt] = {"df" : df, "configs" : basic_configs}
+    if csv_filepath.exists() is False:
+        print(f"~~~Saving parsed csv for {set_str}-{msmt_num}")
+        df.to_csv(new_filepath)
+        
+    # all_dfs[set_msmt] = {"df" : df, "configs" : basic_configs}
+    
+    csv_dataset = DataSet(df, expt_name="FastQi_Tracking", dataset_label=set_msmt, units="S21", configs=basic_configs)
+    all_dsets.append(csv_dataset)
+    
+    
+    
 
-assert len(all_dfs) != 0
-print(f"all_dfs populated with > {len(all_dfs)} < csv files.")
 
-
-# %% helper methods
-
-from quick_helpers import unpack_df, plot_data_with_pandas
 
 make_plots = False
 
-# %% plot all traces in their own plot
-if make_plots is True and len(all_dfs) <= 25:
-    for key, (df, csv_configs) in all_dfs.items():
-        
-        freqs, magn_dB, phase_rad = unpack_df(df)
-        
-        df, fig, axes = plot_data_with_pandas(freqs, magn_dB, phase_rad=phase_rad)
-
-        fig = axes["A"].get_figure()
-        fig.suptitle(key, size=16)
-        fig.tight_layout()
-        plt.show()
-
-    # plot all complex circles by themselves
-    # chosen_plots = [x for x in all_dfs.keys() if '-75_dBm' in x]
-
-    chosen_plots = list(all_dfs.keys())
-    fig, axes = plt.subplots(len(chosen_plots), 1, figsize=(12, 3*len(chosen_plots)))
-    for idx, key in enumerate(chosen_plots):
-        df, csv_configs = all_dfs[key]
-        ax = axes[idx]
-        
-        freqs, magn_dB, phase_rad = unpack_df(df)
-        df, _, _ = plot_data_with_pandas(freqs, magn_dB, phase_rad=phase_rad, ax=ax)
-        
-        # ax.set_aspect("equal")
-        ax.set_title(f"{key[-7:]}")
-        
-    fig.tight_layout()
-
-
-    # plot all complex circles on one plot
-    fig, ax = plt.subplots(1, 1, figsize=(8, 8))
-    for key, (df, csv_configs) in all_dfs.items():
-        freqs, magn_dB, phase_rad = unpack_df(df)
-        df, _, _ = plot_data_with_pandas(freqs, magn_dB, phase_rad=phase_rad, ax=ax, label=label)
-        
-        
-    # ax.set_title(key)
-    plt.legend()
-    fig.tight_layout()
-    # plt.show()
-    plt.close()
-    
-        
     
 # %% run analysis with scresonators
-from src.DataAnalysis import DataAnalysis
+from bcqt_hub.src.modules.DataAnalysis import DataAnalysis
     
+# window_size = len(all_dsets)//1000
+window_size = 15*2
+full_windows = range(len(all_dsets)//window_size + 1)
+all_idxes = [x*window_size for x in full_windows]
+all_idxes.append(len(all_dsets))
 
-init_params = [None]*4
-processed_data = all_dfs
-# processed_data = { key : {"df": df,     
-#                           "csv_configs" : {**csv_configs,  
-#                                            "init_params" : init_params, 
-#                                            "time_end" : time_end  
-#                                            }, 
-#                           }
-                        #   for key, (df, csv_configs) in all_dfs.items() } 
+all_analyses, all_param_dicts = [], []
+for idx in range(len(all_idxes)-1):
+    start, end = all_idxes[idx], all_idxes[idx+1]-1
+    # print(idx, start, end)
+    
+    
+    label = f"idx -> {start}:{end}"
+    
+    
+    # start by averaging all measurements in the window together
+    dsets_in_window = [x for x in all_dsets[start:end]]
+    window_dfs = [x.data for x in dsets_in_window]
+    
+    example_dset = dsets_in_window[0]
+    
+    # skip if window is too small
+    if len(dsets_in_window) < window_size*0.75:
+        continue
+    
+    freqs = dsets_in_window[0].data["Frequency"]
+    all_ampls = [df["S21 magn_dB"].values for df in window_dfs]
+    all_phases = [df["S21 phase_rad"].values for df in window_dfs]
+    
+    averaged_ampls = np.average(all_ampls, axis=0)
+    averaged_phases = np.average(all_phases, axis=0)
+    
+    averaged_df = pd.DataFrame({"Frequency":freqs, "S21 magn_dB":averaged_ampls, "S21 phase_rad":averaged_phases})
 
-Res_PowSweep_Analysis = DataAnalysis(processed_data)
+    Res_Analysis = DataAnalysis(averaged_df)
 
-fit_results = {}
-for key, processed_data_dict in processed_data.items():
-    df, csv_configs = processed_data_dict.values()
+    if make_plots is True:
+        qh.plot_s2p_df(averaged_df)
     
-    print(f"Fitting {key}")
     
-    power = csv_configs["power"]
-    time_end = csv_configs["timestamp"]    
+    #               [Q, Qc, w1, phi]
+    # init_params = [2.68e5, 1e6, 5.86325424e9, 0.028]
+    init_params = None
     
-    # try:
-    # output_params, conf_array, error, init, output_path
-    params, conf_intervals, err, init1, fig = Res_PowSweep_Analysis.fit_single_res(data_df=df, save_dcm_plot=False, plot_title=key, save_path=dcm_path)
-    # except Exception as e:
-    #     print(f"Failed to fit {key}  --> \n   {e}")
-    #     continue
+    params, conf_intervals, err, init1, fig = Res_Analysis.fit_single_res(data_df=averaged_df, save_dcm_plot=False, plot_title=label, manual_init=init_params)
+
+    # plt.show()
     
-    # 1/Q = 1/Qi + cos(phi)/|Qc|
-    # 1/Qi = 1/Q - cos(phi)/|Qc|
-    # Qi = 1/(1/Q - cos(phi)/|Qc|)
+    power = example_dset.configs["power"]
     
     Q, Qc, f_center, phi = params
     Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, f_center_err = conf_intervals
@@ -232,6 +159,7 @@ for key, processed_data_dict in processed_data.items():
         "f_center_err" : f_center_err,
         "phi" : phi,
         "phi_err" : phi_err,
+        "Analysis" : Res_Analysis,
     }
 
     perc_errs = {
@@ -240,32 +168,45 @@ for key, processed_data_dict in processed_data.items():
         "Qc_perc" : Qc_err / Qc,
     }
     
-    fit_results[key] = (df, csv_configs, parameters_dict, perc_errs)
+    skip_value = False
+    for err in perc_errs.values():
+        if err >= 0.50 or err == 0.0:
+            skip_value = True
+            print(f"Skipping {label}  ({idx}/{len(all_idxes)})")
     
-    if make_plots is True:
-        plt.show()
-    else:
-        plt.close()
-        
-    break
+    if skip_value == True:
+        continue
+    
+    Res_Analysis.configs = example_dset.configs
+    Res_Analysis.parameters_dict = parameters_dict
+    Res_Analysis.perc_errs = perc_errs
+    
+    all_analyses.append(Res_Analysis)
+    all_param_dicts.append(parameters_dict)
+    
     
 # %% get all fit results and organize into a single 
 
-all_param_dicts = {}
-for key, (df, csv_configs, parameters_dict, perc_errs) in fit_results.items():
-    all_param_dicts[key] = parameters_dict
     
-df_fit_results = pd.DataFrame.from_dict(all_param_dicts, orient="index").reset_index()
-# df_fit_results.drop("phi_err", axis="columns", inplace=True)  
+for ResAnalysis in all_analyses:
+    
+    df = ResAnalysis.data
+    configs = ResAnalysis.configs
+    parameters_dict = ResAnalysis.parameters_dict
+    perc_errs = ResAnalysis.perc_errs
+    
+    df_fit_results = pd.DataFrame(all_param_dicts)
+    df_fit_results.drop("phi_err", axis="columns", inplace=True)  
 
 
 n_pows = df_fit_results["power"].nunique()
 powers = df_fit_results["power"].unique()
-
-for param in ["Q", "Qi", "Qc"]:
+make_plots = True
+# for param in ["Q", "Qi", "Qc"]:
+for param in ["Qi"]:
     
     if make_plots is True:
-        fig, axes = plt.subplots(n_pows, 1, figsize=(10, 4*n_pows))
+        fig, axes = plt.subplots(n_pows, 1, figsize=(15, 3*n_pows))
         
         # handle case where we have single plot
         if type(axes) != np.ndarray:
@@ -273,10 +214,10 @@ for param in ["Q", "Qi", "Qc"]:
             axes = [axes]
             
         for ax, power in zip(axes, powers):
-            threshold_percentage = 20
+            threshold_percentage = 7
             matching_powers = df_fit_results.loc[ df_fit_results["power"] == power]
             
-            # param = "Q"
+            analysis = matching_powers["Analysis"][0]
             dataset = matching_powers[param]
             dataset_err = matching_powers[f"{param}_err"]
             xvals = range(len(dataset))
@@ -284,8 +225,17 @@ for param in ["Q", "Qi", "Qc"]:
             avg, std = np.average(dataset), np.std(dataset)
             
             failed_points = []
+            added, popped = 0, 0
             for x, pt, pt_err in zip(xvals, dataset, dataset_err):
                 perc_err = pt_err/pt * 100
+                
+                if pt >= avg*(1.5) or pt <= avg*(0.5):
+                    print(f"\nRemoved idx={x}, {param} = {pt:1.1e} +/- {perc_err:1.1e} ({perc_err=:1.2f}%) \nupdating avg & stdev\n   from:   {avg:1.1e} / {std:1.1e}")
+                    dataset.pop(x)
+                    avg, std = np.average(dataset), np.std(dataset)
+                    print(f"     to:   {avg:1.1e} / {std:1.1e}")
+                    popped += 1
+                    continue
                 
                 if perc_err > threshold_percentage:
                     info_str = f"idx{x}, {power=}: {param}={pt:1.1f} +/- {pt_err:1.1f}  ({perc_err=:1.1f}% > {threshold_percentage=}%)"
@@ -293,12 +243,11 @@ for param in ["Q", "Qi", "Qc"]:
                     pt_color = 'r' 
                 else:
                     pt_color = 'b'
-                    
+                
                 ax.errorbar(x=x, y=pt, yerr=pt_err, color=pt_color, markersize=6, capsize=3)
-            
+                added += 1
                 ax.plot(x, pt, 'o', markersize=6, color=pt_color)
                 
-            
             ax.axhline(avg, linestyle='--', linewidth=1, color='k', label=f"Average {param} = {avg:1.1e}")
             
             ax.set_title(f"Power = {power} dBm")
@@ -308,15 +257,46 @@ for param in ["Q", "Qi", "Qc"]:
             ax.set_ylabel(f"{param} Values")
             ax.legend()
 
-
             display(f"[{power = }] Failed Points: ")
             for (x, pt, pt_err, info_str) in failed_points:
                 print(info_str)
-
-
-            fig.suptitle(f"Tracking {param} values over time, \n1 min/pt, \nthreshold = {threshold_percentage}% \n50 points per trace \n1 kHz IF_BW \n 1000 averages", size=18)
+                
+            title_str = f"Tracking {param} values over time" + \
+                        f"\n{window_size} traces * {analysis.configs["avgs"]} avgs per point" + \
+                        f"\n{len(failed_points)} failures to reach {threshold_percentage}% max uncertainty for {len(df_fit_results) - popped} points"
+            fig.suptitle(title_str, size=18)
             fig.tight_layout()
             
+            
         plt.show()
+
+# %%
+
+from matplotlib import colors
+from matplotlib.ticker import PercentFormatter
+
+all_qi_perc_errors = [x for x in df_fit_results["Qi_err"]/df_fit_results["Qi"]]
+n_bins = 20
+
+fig, axes = plt.subplots(1,1, figsize=(6,6))
+axes = [axes]
+
+N, bins, patches = axes[0].hist(all_qi_perc_errors, bins=n_bins, edgecolor='k')
+
+# We'll color code by height, but you could use any scalar
+fracs = N / N.max()
+norm = colors.Normalize(0, 0)
+
+# Now, we'll loop through our objects and set the color of each accordingly
+for thisfrac, thispatch in zip(fracs, patches):
+    color = plt.cm.summer(norm(thisfrac))
+    thispatch.set_facecolor(color)
+    thispatch
+
+axes[0].xaxis.set_major_formatter(PercentFormatter(xmax=1))
+axes[0].set_title("Histogram of uncertainty\n threshold counts")
+    
+
+
 
 # %%

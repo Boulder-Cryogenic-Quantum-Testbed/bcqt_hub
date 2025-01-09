@@ -1,6 +1,6 @@
 import socket
 
-if __name__ is "__main__":
+if __name__ == "__main__":
 
     # broadcast address is the bitwise OR between IP and bit-complement of the subnet mask
     addr_SND = ('192.168.0.255', 4950)  # broadcast address / MCL test equipment listens on port 4950

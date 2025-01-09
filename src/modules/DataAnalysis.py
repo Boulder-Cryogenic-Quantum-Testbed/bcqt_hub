@@ -10,7 +10,6 @@ from pathlib import Path
 
 # lazy... lab PC 1 and PC 2
 scres_path_1 = Path(r"C:\Users\Lehnert Lab\GitHub\scresonators")
-# scres_path_1 = Path(r"C:\Users\Lehnert Lab\GitHub\scresonators-andre")
 scres_path_2 = Path(r"E:\GitHub\scresonators")
 scres_path_3 = Path(r"/Users/jlr7/OneDrive - UCB-O365/GitHub/scresonators")
 
@@ -25,7 +24,7 @@ import fit_resonator.fit as fsd
 
 # DataResults Class
 class DataAnalysis():
-    def __init__(self, processed_data, dstr=None):
+    def __init__(self, data, dstr=None):
         """
             for now, processed_data is just a weird dictionary:
             
@@ -47,7 +46,7 @@ class DataAnalysis():
                     df, init_p0 = data_tuple
         
         """
-        self.data = processed_data
+        self.data = data
         
         if dstr is not None:
             self.dstr = dstr
@@ -520,7 +519,6 @@ class DataAnalysis():
     
         if show_plots is False:
             plt.close('all')
-
 
 
     def fit_delta_tls(self, Qi, T, fc, Qc, p, 
