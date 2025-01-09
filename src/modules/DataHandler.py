@@ -3,14 +3,14 @@ import pandas as pd
 from datetime import datetime
 # %%
 
-class DataSet():
+class DataHandler():
     """
         this class compartmentalizes just one set of data
         
         the data will be saved in pandas dataframes in self.data
         
-        the scope of the methods include:
-            - initialization requires a dataset, an experiment name, and units
+        class methods scope:
+            - Needs data, an experiment name, and units in order to initialize
             - methods for handling different input data types (dict, list, np.array, dataframe)
             - stores metadata such as units and experimental configs
             - generates relevant metadata such as timestamps, filepaths
@@ -85,7 +85,7 @@ class DataSet():
     
         for key, val in kwargs.items():
             if key in self.metadata:
-                self.print_datahandler(f"        [DataSet] Overwriting {key}={self.metadata[key]} with {key}={val}")
+                self.print_dataset(f"        [DataHandler] Overwriting {key}={self.metadata[key]} with {key}={val}")
             else:
                 print(f"Saving {key}={val}")
     
@@ -105,22 +105,22 @@ class DataSet():
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
             
     def __str__(self):
-        return f"DataSet -> {self.display_metadata()}"
+        return f"DataHandler -> {self.display_metadata()}"
     
     def __len__(self):
         return len(self.data)
     
     def __repr__(self):
-        return f"DataSet: {len(self) = }"
+        return f"DataHandler: {len(self) = }"
     
     
-class DataHandler(dict):
+class DataSet(dict):
     
     """
         modified dict that has built-in support for:
-            - creating DataSet objects to compartmentalize data
-            - combining DataSets into one pandas dataframe
-            - saving multiple datasets as csv files
+            - creating DataHandler objects to compartmentalize data
+            - combining DataHandlers into one pandas dataframe
+            - saving multiple DataHandlers as csv files
     """
     
     def __init__(self, *args, **kwargs):
@@ -131,10 +131,10 @@ class DataHandler(dict):
 
     def load_dataset(self, dset):
         
-        if isinstance(dset, DataSet) is False:
-            raise TypeError("argument 'dset' is not a DataSet object.")
+        if isinstance(dset, DataHandler) is False:
+            raise TypeError("argument 'dset' is not a DataHandler object.")
         
-        self[expt_name] = DataSet(data, expt_name, units)
+        self[expt_name] = DataHandler(data, expt_name, units)
         
         expt_name = dset
 
