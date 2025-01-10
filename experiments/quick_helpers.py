@@ -7,6 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy as sp
 from datetime import datetime
+from pathlib import Path
 
 def archive_data(VNA, s2p_df:pd.DataFrame, meas_name:str, expt_category:str = '', save_dir:str = "./data", all_axes=None):
     # check if save_dir is a path or string
@@ -130,21 +131,23 @@ def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_e
             # remove original column
             fixed_df.drop(columns=col, inplace=True)
             
-            fixed_df["Frequency"] = fixed_df["Frequency"].to_numpy().real 
+            fixed_df["Frequency"] = fixed_df["Frequency"].values.astype(float)
+            
+            
     
     # grab the first three letters of each column
     # then remove duplicates so we have a list of all s-parameters
     all_col_sparams = [col[:3] for col in fixed_df.columns]
     sparams = list(set([x for x in all_col_sparams if all_col_sparams.count(x) > 1]))
     
-    freqs = fixed_df["Frequency"].apply(lambda x: x.real)  # force freq to be a float
+    freqs = fixed_df["Frequency"].apply(lambda x: float(x).real)  # force freq to be a float
 
     # now go through all the s-parameters and grab the magn and phase data using filter()
     all_axes = []
     for sparam in sparams:
         magn_and_phase = fixed_df.filter(like=sparam)
         magn_dB, phase_rad =  magn_and_phase.iloc[:,0].values.astype(float), magn_and_phase.iloc[:,1].values.astype(float)
-        axes = plot_data_with_pandas(freqs, magn_dB=magn_dB, phase_rad=phase_rad)
+        axes = plot_data_with_pandas(freqs, magn_dB=magn_dB, phase_rad=phase_rad, plot_complex=plot_complex)
 
         fig = axes[0].get_figure()
         fig.suptitle(f"{sparam} - {title}", fontsize=18)
@@ -155,8 +158,10 @@ def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_e
         
 
 # TODO: add functionality for taking dataframes instead of individual np arrays
-def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, phase_rad=None, plot_dict=None):
+def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, phase_rad=None, plot_dict=None, plot_complex=None):
 
+    
+    
     # lazy way to pass custom args for separate plots
     if plot_dict is None:
         plot_complex=True 
