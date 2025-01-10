@@ -20,35 +20,10 @@ script_filename = Path(__file__).stem
 
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 
-# %%
 from bcqt_hub.src.modules.DataAnalysis import DataAnalysis
 import bcqt_hub.experiments.quick_helpers as qh
 
 from bcqt_hub.src.drivers.instruments.VNA_Keysight import VNA_Keysight
-
-VNA_Keysight_InstrConfig = {
-    "instrument_name" : "VNA_Keysight",
-    # "rm_backend" : "@py",
-    "rm_backend" : None,
-    "instr_address" : 'TCPIP0::192.168.0.105::inst0::INSTR',
-    "n_points" : 1001,
-    "f_start" : 2e9,
-    "f_stop" : 10e9,
-    "if_bandwidth" : 1000,
-    "power" : -50,
-    "edelay" : 0,
-    "averages" : 2,
-    "sparam" : ['S11', 'S21'],  
-    
-    # "segment_type" : "linear",
-    "segment_type" : "hybrid",
-}
-
-PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
-
-PNA_X.init_configs(VNA_Keysight_InstrConfig)
-
-# %%
 
 """ 
     most of the measurements for the characterization will be taken in the interactive window, so
@@ -69,11 +44,35 @@ PNA_X.init_configs(VNA_Keysight_InstrConfig)
         5) if you want to load a csv and plot the data, the final cell will use load_csv() and plot_s2p_df() to do so
 """
 
-    
-    #########################
-
 # %%
 
+### create dict to hold "default" configurations
+VNA_Keysight_InstrConfig = {
+    "instrument_name" : "VNA_Keysight",
+    # "rm_backend" : "@py",
+    "rm_backend" : None,
+    "instr_address" : 'TCPIP0::192.168.0.105::inst0::INSTR',
+    "n_points" : 1001,
+    "f_start" : 2e9,
+    "f_stop" : 10e9,
+    "if_bandwidth" : 1000,
+    "power" : -50,
+    "edelay" : 0,
+    "averages" : 2,
+    "sparam" : ['S11', 'S21'],  
+    
+    # "segment_type" : "linear",
+    "segment_type" : "hybrid",
+}
+
+### create instrument driver from "VNA_Keysight" class, which inherits BaseDriver
+PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)  
+
+### Manually initialize configs, should technically be unnecessary
+PNA_X.init_configs(VNA_Keysight_InstrConfig)
+
+    
+# %%
 Measurement_Configs = {
     "f_center" : 5.863250e9,
     "f_span" : 0.1e6,
@@ -85,22 +84,35 @@ Measurement_Configs = {
 }
 
 
+#### read error queue 
 PNA_X.check_instr_error_queue()
-PNA_X.filter_configs()
 
+#### give instr driver a new dict to overwrite existing settings
 PNA_X.update_configs(**Measurement_Configs)
-# PNA_X.get_instr_params()
-display(PNA_X.configs)
 
+### method to see what settings are applied
+### NOTE: need to distinguish instr settings
+###         that are in the object's config
+###         and settings that are on the
+###         physical instrument in the lab!
+PNA_X.get_instr_params()  # show configs in the lab instrument
+display(PNA_X.configs)    # show configs in the object itself
+
+### sets everything up for a measurement without turning on the 
+### power and recording data
 PNA_X.setup_s2p_measurement()
 
 
 # %%
+
+### start measurement BUT DOES NOT SEND DATA TO LAB PC
 PNA_X.run_measurement() 
 
+### download data from instrument and plot
 s2p_df = PNA_X.return_data_s2p()
 all_axes = qh.plot_s2p_df(s2p_df)
 
+### save data
 save_dir = "./cooldown57"
 expt_category = "Fast_Qi_Measurements"
 meas_name = "Line4_TonyTa_NbSi_03"

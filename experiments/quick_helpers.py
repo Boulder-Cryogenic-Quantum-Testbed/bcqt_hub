@@ -7,6 +7,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy as sp
 from datetime import datetime
+from pathlib import Path
 
 def archive_data(VNA, s2p_df:pd.DataFrame, meas_name:str, expt_category:str = '', save_dir:str = "./data", all_axes=None):
     # check if save_dir is a path or string
