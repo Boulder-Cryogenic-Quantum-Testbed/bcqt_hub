@@ -43,6 +43,11 @@ class VNA_Keysight(BaseDriver):
             self.configs = {}
         
         ############################
+        #### fix any bad keys in configs
+        ############################
+        self.filter_configs()
+        
+        ############################
         #### s-parameters
         ############################
         self.print_debug("setting scattering params")
