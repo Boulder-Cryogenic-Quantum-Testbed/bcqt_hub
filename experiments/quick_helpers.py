@@ -164,7 +164,7 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
     
     # lazy way to pass custom args for separate plots
     if plot_dict is None:
-        plot_complex=True 
+        plot_complex=True if plot_complex is None else plot_complex
         do_edelay_fit=False
         track_min=False
         suptitle=None
@@ -182,7 +182,7 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
         phase_color = plot_dict["phase_color"]    
         magn_label = plot_dict["magn_label"]    
         phase_label = plot_dict["phase_label"]    
-        
+    
         
     if phase_rad is None and phase_deg is not None:
         # degrees were given
@@ -228,7 +228,7 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
     
     if axes is None:
         mosaic = "AACC\nBBCC"
-        fig, axes = plt.subplot_mosaic(mosaic, figsize=(13,5))
+        fig, axes = plt.subplot_mosaic(mosaic, figsize=(20,8))
         ax1, ax2, ax3 = axes["A"], axes["B"], axes["C"]
         axes = [ax1, ax2, ax3]
     else:
