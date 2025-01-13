@@ -72,7 +72,6 @@ def load_csv(filepath):
     
     return df, all_magns, all_phases, freqs
 
-
 ## TODO: these should go in the DataProcessor object
 def unpack_df(df): 
     freqs = df["Frequency"]
@@ -156,7 +155,6 @@ def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_e
         
     return all_axes
         
-
 # TODO: add functionality for taking dataframes instead of individual np arrays
 def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, phase_rad=None, plot_dict=None, plot_complex=None):
 

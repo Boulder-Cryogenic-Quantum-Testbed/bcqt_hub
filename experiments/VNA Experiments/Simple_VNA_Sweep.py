@@ -62,7 +62,7 @@ for idx in range(num_msmt):
 
     # freqs, magn, phase = PNA_X.take_single_trace(Expt_Config)
 
-    df, fig, axes = plot_data_with_pandas(freqs, magn_dB, phase_deg=phase_deg)
+    df, fig, axes = qh.plot_data_with_pandas(freqs, magn_dB, phase_deg=phase_deg)
 
     title_str = str(f"{Expt_Config["span"]/1e6:1.2f}MHz_span_{Expt_Config["averages"]}_avgs_{Expt_Config["if_bandwidth"]}_IFBW_{Expt_Config["power"]}_dBm")
     fig = axes["A"].get_figure()
@@ -80,7 +80,7 @@ for idx in range(num_msmt):
 # plot all traces in their own plot
 for key, df in all_dfs.items():
     freqs, magn_dB, phase_rad = unpack_df(df)
-    df, fig, axes = plot_data_with_pandas(freqs, magn_dB, phase_rad=phase_rad)
+    df, fig, axes = qh.plot_data_with_pandas(freqs, magn_dB, phase_rad=phase_rad)
 
 # plot all complex circles by themselves
 # fig, axes = plt.subplots(len(all_dfs), 1, figsize=(6, 32))

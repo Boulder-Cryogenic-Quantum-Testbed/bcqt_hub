@@ -1,6 +1,8 @@
 # %%
 """
-    Test implementation of VNA driver
+    Example implementation of VNA driver
+    
+    last update: 1/13/25
 """
 
 # %load_ext autoreload
@@ -41,7 +43,7 @@ from bcqt_hub.src.drivers.instruments.VNA_Keysight import VNA_Keysight
             
         bonus:
         
-        5) if you want to load a csv and plot the data, the final cell will use load_csv() and plot_s2p_df() to do so
+        5) if you want to load a csv and plot the data, use the associated xxx_Analyze script in this directory.
 """
 
 # %%
@@ -74,11 +76,11 @@ PNA_X.init_configs(VNA_Keysight_InstrConfig)
     
 # %%
 Measurement_Configs = {
-    "f_center" : 5.863250e9,
-    "f_span" : 0.1e6,
+    "f_center" : 6.230608e9,
+    "f_span" : 250e3,
     "n_points" : 10001,
-    "if_bw" : 5000,
-    "power" : -50,
+    "if_bw" : 10000,
+    "power" : -30,
     "averages" : 2,
     "sparam" : ['S11', 'S21'],  
 }
@@ -98,7 +100,8 @@ PNA_X.update_configs(**Measurement_Configs)
 PNA_X.get_instr_params()  # show configs in the lab instrument
 display(PNA_X.configs)    # show configs in the object itself
 
-### sets everything up for a measurement without turning on the 
+# %% 
+# ### sets everything up for a measurement without turning on the 
 ### power and recording data
 PNA_X.setup_s2p_measurement()
 
@@ -110,75 +113,14 @@ PNA_X.run_measurement()
 
 ### download data from instrument and plot
 s2p_df = PNA_X.return_data_s2p()
-all_axes = qh.plot_s2p_df(s2p_df)
+all_axes = qh.plot_s2p_df(s2p_df, plot_complex=False)
 
 ### save data
-save_dir = "./cooldown57"
-expt_category = "Fast_Qi_Measurements"
-meas_name = "Line4_TonyTa_NbSi_03"
+save_dir = "./cooldown59"
+expt_category = "Example_Measurements"
+meas_name = "Line4_MQC_BOE_02"
 
-filename, filepath = qh.Archive_Data(PNA_X, s2p_df, meas_name=meas_name, expt_category=expt_category, all_axes=all_axes)
-
-# %%
-
-basepath = Path(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub\experiments\VNA Experiments\VNA Characterization\data\HEMT_Testing")
-# file_dir = basepath / r"Line26_InsertionLoss"
-file_dir = basepath / r"NbTi_Cable"
-
-# %% manually load data and plot
-
-filepath = list(file_dir.glob("*.csv"))[-1]
-
-loaded_df, all_magns, all_phases, freqs = qh.load_csv(filepath)
-loaded_df.drop(["datetime.now()"], inplace=True)
-
-
-all_axes = qh.plot_s2p_df(loaded_df, plot_complex=False, track_min=False, title=filepath.stem, do_edelay_fit=False)
-
-
-# %% two files and two dfs
-file_dir_1 =  basepath / r"HEMT_ON_-55dBm_Line25"
-file_dir_2 =  basepath / r"HEMT_ON_-55dBm_Line27"
-# file_dir_2 =  basepath / r"HEMT_OFF_-55dBm_Line27_Background"
-assert file_dir_1.exists() and file_dir_2.exists()
-
-filepath_1 = list(file_dir_1.glob("*.csv"))[-1]
-filepath_2 = list(file_dir_2.glob("*.csv"))[-1]
-
-
-loaded_df_1, all_magns_1, all_phases_1, freqs_1 = qh.load_csv(filepath_1)
-loaded_df_2, all_magns_2, all_phases_2, freqs_2 = qh.load_csv(filepath_2)
-
-freq = loaded_df_2["Frequency"].values[1:].astype(float)
-magn_1 = loaded_df_1["S21 magn_dB"].values[1:].astype(float)
-magn_2 = loaded_df_2["S21 magn_dB"].values[1:].astype(float)
+filename, filepath = qh.archive_data(PNA_X, s2p_df, meas_name=meas_name, expt_category=expt_category, all_axes=all_axes)
 
 # %%
 
-mosaic = "AA\nAA\nBB"
-fig1, axes = plt.subplot_mosaic(mosaic, figsize=(8, 8))
-ax1, ax2 = axes["A"], axes["B"]
-
-ax1.set_title("VNA Power = -55 dBm")
-ax1.plot(freq, magn_1, label="HEMT 25")
-ax1.plot(freq, magn_2, label="HEMT 27")
-ax1.legend()
-
-ax2.set_title("[HEMT 27 - HEMT 25]")
-ax2.plot(freq, (magn_1 - magn_2))
-ax2.axhline(0, linestyle=':', color='k')
-
-
-for ax in (ax1, ax2):
-    ax.set_xlim([4e9, 8e9])
-    
-
-
-fig1.suptitle("Optimized HEMT S21 Measurements")
-    
-ax1.set_ylim([0, 30])
-ax2.set_ylim([-20, 10])
-
-fig1.tight_layout()
-
-# %%
