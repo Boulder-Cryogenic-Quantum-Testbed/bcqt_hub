@@ -70,9 +70,6 @@ VNA_Keysight_InstrConfig = {
 ### create instrument driver from "VNA_Keysight" class, which inherits BaseDriver
 PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)  
 
-### Manually initialize configs, should technically be unnecessary
-PNA_X.init_configs(VNA_Keysight_InstrConfig)
-
     
 # %%
 Measurement_Configs = {
@@ -116,9 +113,9 @@ s2p_df = PNA_X.return_data_s2p()
 all_axes = qh.plot_s2p_df(s2p_df, plot_complex=False)
 
 ### save data
-save_dir = "./cooldown59"
-expt_category = "Example_Measurements"
-meas_name = "Line4_MQC_BOE_02"
+save_dir = "./cooldown59/Example_Measurements"
+expt_category = "Line4_MQC_BOE_02"
+meas_name = "5p474_5p871_Resonances"
 
 filename, filepath = qh.archive_data(PNA_X, s2p_df, meas_name=meas_name, expt_category=expt_category, all_axes=all_axes)
 

@@ -36,7 +36,7 @@ class VNA_Keysight(BaseDriver):
     # ~~~  config dict methods
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    def init_configs(self, InstrConfig_Dict=None):
+    def init_configs(self):
         
         # create an empty config dict if missing
         if "configs" not in dir(self):
@@ -201,6 +201,7 @@ class VNA_Keysight(BaseDriver):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     
+    # TODO: remove references to kwargs
     def compute_homophasal_segments(self, Noffres=None, segment_type=None, **kwargs):
         """
             Computes segments needed to perform homophasal measurements
@@ -224,7 +225,7 @@ class VNA_Keysight(BaseDriver):
             Noffres = 5
         
         # load kwargs into vna configs
-        self.filter_configs(**kwargs)
+        self.filter_configs()
         
         f_center = self.configs["f_center"]
         f_span = self.configs["f_span"]
