@@ -2,5 +2,10 @@
 */data/*
 *.csv*
 *.png
+*.zip
+
+src\drivers\misc\CryoSwitchController\pulse_logging.txt
+src\drivers\misc\CryoSwitchController\data
+
 
 *DS_Store*
