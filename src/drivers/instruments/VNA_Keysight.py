@@ -253,7 +253,7 @@ class VNA_Keysight(BaseDriver):
         if segment_type == 'homophasal':
             # homophasal for entire freq range
             segments = [f',1,2,{ff1*fscale},{ff2*fscale}'
-                    for ff1, ff2 in zip(freq[0::2], freq[1::2])]
+                    for ff1, ff2 in zip(freq[0::2], freq[1::2])][1:-1]
         
         elif segment_type == 'hybrid':
             assert self.configs["Noffres"] is not None
@@ -269,6 +269,7 @@ class VNA_Keysight(BaseDriver):
             segments = [f',1,{Noffres},{fstop*fscale}, {fb}',
                         *h_segments,
                         f',1,{Noffres},{fa},{fstart*fscale}']
+            
         elif segment_type == 'linear':
             # simple linear sweep
             segments = [f',1,{n_points},{fstop*fscale}, {fstart*fscale}']
