@@ -59,7 +59,7 @@ VNA_Keysight_InstrConfig = {
     "f_stop" : 10e9,
     "if_bandwidth" : 1000,
     "power" : -50,
-    "edelay" : 0,
+    "edelay" : 61.2,
     "averages" : 2,
     "sparam" : ['S11', 'S21'],  
     
@@ -70,16 +70,18 @@ VNA_Keysight_InstrConfig = {
 ### create instrument driver from "VNA_Keysight" class, which inherits BaseDriver
 PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)  
 
+PNA_X.update_configs(**VNA_Keysight_InstrConfig)
     
 # %%
 Measurement_Configs = {
     "f_center" : 6.230608e9,
     "f_span" : 250e3,
-    "n_points" : 10001,
+    "n_points" : 30001,
     "if_bw" : 10000,
     "power" : -30,
     "averages" : 2,
-    "sparam" : ['S11', 'S21'],  
+    "sparam" : ['S21'],  
+    "edelay" : 61.2e-9, 
 }
 
 
@@ -110,12 +112,12 @@ PNA_X.run_measurement()
 
 ### download data from instrument and plot
 s2p_df = PNA_X.return_data_s2p()
-all_axes = qh.plot_s2p_df(s2p_df, plot_complex=False)
+all_axes = qh.plot_s2p_df(s2p_df, plot_complex=True)
 
 ### save data
 save_dir = "./cooldown59/Example_Measurements"
-expt_category = "Line4_MQC_BOE_02"
-meas_name = "5p474_5p871_Resonances"
+expt_category = "After Fixing Ground"
+meas_name = "No_TWPA"
 
 filename, filepath = qh.archive_data(PNA_X, s2p_df, meas_name=meas_name, expt_category=expt_category, all_axes=all_axes)
 
