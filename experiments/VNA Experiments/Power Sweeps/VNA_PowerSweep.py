@@ -4,7 +4,7 @@
 """
 
 from pathlib import Path
-from datetime import datetime
+import datetime
 import sys
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -28,12 +28,13 @@ VNA_Keysight_InstrConfig = {
     # "rm_backend" : "@py",
     "rm_backend" : None,
     "instr_address" : 'TCPIP0::192.168.0.105::inst0::INSTR',
-    "edelay" : 70e-9,
+    "edelay" : 61.6,
     "averages" : 2,
-    "sparam" : ['S11', 'S21'],  
+    "sparam" : ['S21'],  
     
-    # "segment_type" : "linear",
-    "segment_type" : "hybrid",
+    # "segment_type" : "linear",                    
+    # "segment_type" : "hybrid",
+    "segment_type" : "homophasal",
 }
 
 ### create instrument driver from "VNA_Keysight" class, which inherits BaseDriver
@@ -44,38 +45,69 @@ PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
 # %%
 
 all_freqs =  [ 
-            4.363940e9,
-            4.736490e9,
-            5.106848e9,
-            5.4742e9,
-            5.8713e9,
-            6.230608e9,
-            6.624032e9,
-            7.010540e9,
+            #4.363937e9,
+            #4.735990e9,
+            #5.106850e9,
+            #5.474224e9,
+            5.871314e9,
+            6.230607e9,
+            6.624033e9,
+            7.010527e9,
             ]
 
-all_freqs = [4.363940e9]
+# all_freqs = [all_freqs[2]]
 
-all_powers = [-65, -70, -75, -80]  
+# 100 mins per resonator
+high_powers = np.linspace(-20, -60, 200).round(2) # 12 secs each = 40 min
+med_powers = np.linspace(-60, -75, 55).round(2)  # 24 seconds each = 22 min
+low_powers = np.linspace(-75, -85, 10).round(2)  # 120 secs each = 20 min
+ultra_low_powers = np.linspace(-85, -90, 5).round(2)   # 240 secs = 20 min
+
+# measure every power like normal
+all_powers = [*high_powers, *med_powers, *low_powers, *ultra_low_powers]
+
+# measure all even
+# all_powers = [*high_powers[1::2], *med_powers[1::2], *low_powers[1::2], *ultra_low_powers[1::2]]
+
+# measure all odds
+# all_powers = [*high_powers[1::3], *med_powers[1::3], *low_powers[1::3], *ultra_low_powers[1::3]]
+
+# measure one of each
+# all_powers = [*high_powers[1:2], *med_powers[1:2], *low_powers[1:2], *ultra_low_powers[1:2]]
 
 Measurement_Configs = {
-    "f_center" : all_freqs[0],
     "f_span" : 0.5e6,
-    "n_points" : 5001,
-    "if_bandwidth" : 15000,
-    "power" : -30,
-    "averages" : 10, # num avgs per power point measurement
+    "n_points" : 101,
+    "if_bandwidth" : 1000,
     "sparam" : ['S21'],  
-    "Noffres" : 8,
+    "Noffres" : 5,
 }
 
+# %% time estimation
+
+num_res = len(all_freqs)
+
+ETA_mins = sum([
+    len(high_powers)*6,
+    len(med_powers)*12,
+    len(low_powers)*60,
+    len(ultra_low_powers)*120,
+]) // 60
+
+now = datetime.datetime.now()
+finishing_time = now + datetime.timedelta(minutes=ETA_mins*num_res)
+
+display(f"{ETA_mins} minutes per resonator")
+display(f"{num_res} total resonator(s) = {num_res*ETA_mins} minutes")
+
+display(f" start time: {now.strftime("%m/%d, %I:%M:%S %p")}")
+display(f"   end time: {finishing_time.strftime("%m/%d, %I:%M:%S %p")}")
 
 # %% 
 
-dstr = datetime.today().strftime("%m_%d_%I%M%p")
+dstr = datetime.datetime.today().strftime("%m_%d_%I%M%p")
 
-if "all_dfs" not in locals().keys():
-    all_resonator_data = {}
+all_resonator_data = {}
 
 for idx, freq in enumerate(all_freqs):  # loop over all resonators
     freq_str = f"{freq/1e9:1.3f}".replace('.',"p")
@@ -86,11 +118,27 @@ for idx, freq in enumerate(all_freqs):  # loop over all resonators
     
     for power in all_powers:  # for each resonator, loop over all powers
         
+        Measurement_Configs["power"] = power
+        
+        if power in high_powers:
+            Measurement_Configs["averages"] = 10  # 6 seconds 
+            print(f"{power} in high_powers - averages set to {Measurement_Configs["averages"]}")
+        
+        elif power in med_powers:
+            Measurement_Configs["averages"] = 50  # 12 seconds
+            print(f"{power} in med_powers - averages set to {Measurement_Configs["averages"]}")
+        
+        elif power in low_powers:
+            Measurement_Configs["averages"] = 100  # 60 seconds 
+            print(f"{power} in low_powers - averages set to {Measurement_Configs["averages"]}")
+            
+        elif power in ultra_low_powers:
+            Measurement_Configs["averages"] = 200  # 120 seconds
+            print(f"{power} in ultra_low_powers - averages set to {Measurement_Configs["averages"]}")
+            
         """ 
             use VNA to take & download data
         """
-        
-        Measurement_Configs["power"] = power
         
         ### update configs
         PNA_X.update_configs(**Measurement_Configs)
@@ -107,69 +155,70 @@ for idx, freq in enumerate(all_freqs):  # loop over all resonators
         ### download and plot data
         s2p_df = PNA_X.return_data_s2p()
         axes = qh.plot_s2p_df(s2p_df, plot_complex=True)
-
+        
         ### save data
         save_dir = "./cooldown59/Line4_MQC_BOE_02"
-        expt_category = dstr
+        expt_category = f"Line3_MQC_BOE_02_{dstr}_homophasal"
         num_avgs = Measurement_Configs["averages"]
-        meas_name = rf"VNA_{freq_str}_GHz_{power}_dBm_{num_avgs}_avgs"
+        meas_name = rf"VNA_{freq_str}_GHz_{power:1.2f}_dBm_{num_avgs}_avgs".replace(".","p")
 
         filename, filepath = qh.archive_data(PNA_X, s2p_df, meas_name=meas_name, expt_category=expt_category, all_axes=axes)
 
+
+# %%
+""" 
+    use scresonators to fit the data mid power-sweep
+"""
         
-        """ 
-            use scresonators to fit the data mid power-sweep
-        """
+        # Res_PowSweep_Analysis = DataAnalysis(None, dstr)
+        # print(f"Fitting {filename}")
         
+        # try:
+        #     # output_params, conf_array, error, init, output_path
+        #     params, conf_intervals, err, init1, fig = Res_PowSweep_Analysis.fit_single_res(data_df=s2p_df, save_dcm_plot=False, plot_title=filename, save_path=filepath)
+        # except Exception as e:
+        #     print(f"Failed to plot DCM fit for {power} dBm -> {filename}")
+        #     continue
         
+        # # 1/Q = 1/Qi + cos(phi)/|Qc|
+        # # 1/Qi = 1/Q - cos(phi)/|Qc|
+        # # Qi = 1/(1/Q - cos(phi)/|Qc|)
+        
+        # Q, Qc, f_center, phi = params
+        # Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, f_center_err = conf_intervals
+        
+        # Qi = 1/(1/Q - np.cos(phi)/np.abs(Qc))
+        
+        # params = [Q, Qi, Qc, f_center, phi]
+        
+        # fit_results = {
+        #     "power" : power,
+        #     "Q" : Q,
+        #     "Q_err" : Q_err,
+        #     "Q_perc" : Q_err / Q,
+            
+        #     "Qi" : Qi,
+        #     "Qi_err" : Qi_err,
+        #     "Qi_perc" : Qi_err / Qi,
+            
+        #     "Qc" : Qc,
+        #     "Qc_err" : Qc_err,
+        #     "Qc_perc" : Qc_err / Qc,
+            
+        #     "f_center" : f_center,
+        #     "f_center_err" : f_center_err,
+        #     "phi" : phi,
+        #     "phi_err" : phi_err,
+        # }
+        
+        # res_power_sweep_dict[filename] = (s2p_df, fit_results, Measurement_Configs)
+        # plt.show()
 
 # %% use scresonators to plot data
         
     #     ### analyze data
-    #     Res_PowSweep_Analysis = DataAnalysis(None, dstr)
         
-    #     print(f"Fitting {filename}")
-        
-    #     try:
-    #         # output_params, conf_array, error, init, output_path
-    #         params, conf_intervals, err, init1, fig = Res_PowSweep_Analysis.fit_single_res(data_df=s2p_df, save_dcm_plot=False, plot_title=filename, save_path=filepath)
-    #     except Exception as e:
-    #         print(f"Failed to plot DCM fit for {power} dBm -> {filename}")
-    #         continue
-        
-    #     # 1/Q = 1/Qi + cos(phi)/|Qc|
-    #     # 1/Qi = 1/Q - cos(phi)/|Qc|
-    #     # Qi = 1/(1/Q - cos(phi)/|Qc|)
-        
-    #     Q, Qc, f_center, phi = params
-    #     Q_err, Qi_err, Qc_err, Qc_Re_err, phi_err, f_center_err = conf_intervals
-        
-    #     Qi = 1/(1/Q - np.cos(phi)/np.abs(Qc))
-        
-    #     params = [Q, Qi, Qc, f_center, phi]
-        
-    #     fit_results = {
-    #         "power" : power,
-    #         "Q" : Q,
-    #         "Q_err" : Q_err,
-    #         "Q_perc" : Q_err / Q,
-            
-    #         "Qi" : Qi,
-    #         "Qi_err" : Qi_err,
-    #         "Qi_perc" : Qi_err / Qi,
-            
-    #         "Qc" : Qc,
-    #         "Qc_err" : Qc_err,
-    #         "Qc_perc" : Qc_err / Qc,
-            
-    #         "f_center" : f_center,
-    #         "f_center_err" : f_center_err,
-    #         "phi" : phi,
-    #         "phi_err" : phi_err,
-    #     }
-        
-    #     res_power_sweep_dict[filename] = (s2p_df, fit_results, Measurement_Configs)
-    #     plt.show()
+        x
     
     # all_resonator_data[resonator_name] = res_power_sweep_dict
     
