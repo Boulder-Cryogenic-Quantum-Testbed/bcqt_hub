@@ -20,8 +20,9 @@ sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 import bcqt_hub.experiments.quick_helpers as qh
 
 # %%
+basepath = Path(rf"C:\Users\Lehnert Lab\GitHub\bcqt_hub\experiments\VNA Experiments\VNA Data Taker\data")
+file_dir = basepath / r"HEMT_Testing" / r"HEMT_ON_-55dBm_Line25" 
 
-file_dir = basepath / r"NbTi_Cable"
 
 # %% manually load data and plot
 
@@ -42,7 +43,6 @@ assert file_dir_1.exists() and file_dir_2.exists()
 
 filepath_1 = list(file_dir_1.glob("*.csv"))[-1]
 filepath_2 = list(file_dir_2.glob("*.csv"))[-1]
-
 
 loaded_df_1, all_magns_1, all_phases_1, freqs_1 = qh.load_csv(filepath_1)
 loaded_df_2, all_magns_2, all_phases_2, freqs_2 = qh.load_csv(filepath_2)
@@ -69,8 +69,6 @@ ax2.axhline(0, linestyle=':', color='k')
 
 for ax in (ax1, ax2):
     ax.set_xlim([4e9, 8e9])
-    
-
 
 fig1.suptitle("Optimized HEMT S21 Measurements")
     
