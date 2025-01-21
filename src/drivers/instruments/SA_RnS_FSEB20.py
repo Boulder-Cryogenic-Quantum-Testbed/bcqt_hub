@@ -1,4 +1,4 @@
-import time
+import time, datetime
 
 from ..BaseDriver import BaseDriver
 
@@ -105,6 +105,8 @@ class SA_RnS_FSEB20(BaseDriver):
 
     def trigger_sweep(self):
         
+        dstr = datetime.datetime.today().strftime("%m/%d/%Y @ %I:%M%p")
+        
         sweep_time = float(self.strip_specials(self.query_check("SENSE:SWE:TIME?")))
         self.print_debug(f"{sweep_time = }")
         
@@ -125,7 +127,7 @@ class SA_RnS_FSEB20(BaseDriver):
 
             # once it is "1", print that we're finished
             if check_str != "0":
-                print(f"\nTrace finished. Uploading now.")
+                print(f"\n[{dstr}] Trace finished. Uploading now.")
                 print(f"\n   Total time elapsed: {t_elapsed:1.2f} seconds", end="\r")
                 if t_elapsed >= 600:
                     print(f"                     = {t_elapsed/60:1.1f} minutes \n")

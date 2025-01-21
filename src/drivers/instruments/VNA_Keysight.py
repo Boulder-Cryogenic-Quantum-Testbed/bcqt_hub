@@ -31,7 +31,6 @@ class VNA_Keysight(BaseDriver):
     def return_instrument_parameters(self, print_output=False):
         return super().return_instrument_parameters(print_output)
     
-    
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ~~~  config dict methods
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -437,7 +436,8 @@ class VNA_Keysight(BaseDriver):
         """
             Run the measurement and continuously query until it reports finished
         """
-            
+        dstr = datetime.today().strftime("%m/%d/%Y @ %I:%M%p")
+        
         self.write_check('*CLS')
         
         # initiate display and turn on output
@@ -459,19 +459,22 @@ class VNA_Keysight(BaseDriver):
         # check if the VNA has finished every second, in my experience the *OPC? or *WAI command isnt very reliable
         check = False
         tstart = time.time()   
-            
+        
+        print()
+        self.print_console(f"Beginning measurement at {dstr}")
         while check is False:
-            time.sleep(0.05)
+            time.sleep(0.5)
             t_elapsed = time.time() - tstart
             
             # check_str is a string, "0" = busy or "1" = complete
             check_str = self.strip_specials(self.query_check('STAT:OPER:AVER1:COND?'))[0]
-            print(f"\n      Time elapsed: [{t_elapsed:1.2f}s]  {check_str=}\r", end="\r")
+            print(f"      Time elapsed: [{t_elapsed:1.1f}s]", end="\r")
             
             # once it is "1", print that we're finished
             if check_str != "0":
-                print(f"\nTrace finished. Uploading now.")
-                print(f"\n   Total time elapsed: {t_elapsed:1.2f} seconds", end="\r")
+                dstr_end = datetime.today().strftime("%m/%d/%Y @ %I:%M%p")
+                print(f"\n[{dstr_end}] Trace finished. Uploading now.")
+                print(f"\n   Total time elapsed: {t_elapsed:1.2f} seconds")
                 if t_elapsed >= 600:
                     print(f"                     = {t_elapsed/60:1.1f} minutes \n")
                 
@@ -589,12 +592,12 @@ class VNA_Keysight(BaseDriver):
         combined_df = combined_df.loc[:,~combined_df.columns.duplicated()].copy()
     
         # add datetime to first row for archiving purposes
-        first_row = {col : val for col, val in zip(combined_df.columns, [datetime.now()]*len(combined_df.columns))}
-        datetime_row = pd.DataFrame(first_row, index=["datetime.now()"])
-        final_df = pd.concat([datetime_row, combined_df.iloc[:]])
+        # first_row = {col : val for col, val in zip(combined_df.columns, [datetime.now()]*len(combined_df.columns))}
+        # datetime_row = pd.DataFrame(first_row, index=["datetime.now()"])
+        # final_df = pd.concat([datetime_row, combined_df.iloc[:]])
         
         
-        return final_df
+        return combined_df
     
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ~~~  Instr Scripts

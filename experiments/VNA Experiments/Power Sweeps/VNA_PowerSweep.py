@@ -4,8 +4,7 @@
 """
 
 from pathlib import Path
-import datetime
-import sys
+import sys, time, datetime
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -28,7 +27,7 @@ VNA_Keysight_InstrConfig = {
     # "rm_backend" : "@py",
     "rm_backend" : None,
     "instr_address" : 'TCPIP0::192.168.0.105::inst0::INSTR',
-    "edelay" : 61.6,
+    "edelay" : 61.25,
     "averages" : 2,
     "sparam" : ['S21'],  
     
@@ -44,27 +43,42 @@ PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
 
 # %%
 
-all_freqs =  [ 
-            #4.363937e9,
-            #4.735990e9,
-            #5.106850e9,
-            #5.474224e9,
-            5.871314e9,
-            6.230607e9,
-            6.624033e9,
-            7.010527e9,
-            ]
+#all_freqs =  [   
+            # MQC_BOE_SOLV1
+#            4.3389418e9,
+#            4.7333838e9,
+#            5.1108957e9,
+#            5.4838248e9,
+#            5.8733538e9,
+#            6.2299400e9,  # very low Q
+#            6.6206182e9,  # very low Q
+#            6.9972504e9   # very low Q
+                      
+#           ]
 
-# all_freqs = [all_freqs[2]]
+all_freqs = [
+             # MQC_BOE_02
+             4.363937e9,
+             4.736494e9,
+             5.106847e9,
+             5.474224e9,
+             5.871315e9,
+             6.230610e9,  # very low Q
+             6.624036e9,  # very low Q
+            7.010525e9  # very low Q
+            ] 
+
+all_freqs = [all_freqs[0]]
+ext_atten = 30
 
 # 100 mins per resonator
-high_powers = np.linspace(-20, -60, 200).round(2) # 12 secs each = 40 min
-med_powers = np.linspace(-60, -75, 55).round(2)  # 24 seconds each = 22 min
-low_powers = np.linspace(-75, -85, 10).round(2)  # 120 secs each = 20 min
-ultra_low_powers = np.linspace(-85, -90, 5).round(2)   # 240 secs = 20 min
+high_powers = np.arange(0, -41, -0.2).round(2) # 12 secs each = 40 min
+med_powers = np.arange(-45, -61, -1).round(2)  # 24 seconds each = 22 min
+low_powers = np.arange(-65, -76, -2.5).round(2)  # 120 secs each = 20 min
+ultra_low_powers = np.arange(-75, -91, -5).round(2)   # 240 secs = 20 min
 
-# measure every power like normal
-all_powers = [*high_powers, *med_powers, *low_powers, *ultra_low_powers]
+# # measure every power like normal
+# all_powers = [*high_powers, *med_powers, *low_powers, *ultra_low_powers]
 
 # measure all even
 # all_powers = [*high_powers[1::2], *med_powers[1::2], *low_powers[1::2], *ultra_low_powers[1::2]]
@@ -75,12 +89,19 @@ all_powers = [*high_powers, *med_powers, *low_powers, *ultra_low_powers]
 # measure one of each
 # all_powers = [*high_powers[1:2], *med_powers[1:2], *low_powers[1:2], *ultra_low_powers[1:2]]
 
+# atten_low_powers = [-40]
+all_powers = [-80]
+
+
+print(f"Measuring {len(all_freqs)} resonators and {len(all_powers)} powers for each. ({len(all_powers)*len(all_freqs)} measurements)")
+time.sleep(1)
+
 Measurement_Configs = {
     "f_span" : 0.5e6,
-    "n_points" : 101,
+    "n_points" : 201,
     "if_bandwidth" : 1000,
     "sparam" : ['S21'],  
-    "Noffres" : 5,
+    "Noffres" : 10,
 }
 
 # %% time estimation
@@ -88,27 +109,29 @@ Measurement_Configs = {
 num_res = len(all_freqs)
 
 ETA_mins = sum([
-    len(high_powers)*6,
-    len(med_powers)*12,
-    len(low_powers)*60,
-    len(ultra_low_powers)*120,
-]) // 60
+    len(high_powers)*2.5 // 60,
+    len(med_powers)*7.5 // 60,
+    len(low_powers)*75 // 60,
+    len(ultra_low_powers)*450 // 60,
+]) / 10
 
 now = datetime.datetime.now()
 finishing_time = now + datetime.timedelta(minutes=ETA_mins*num_res)
 
 display(f"{ETA_mins} minutes per resonator")
-display(f"{num_res} total resonator(s) = {num_res*ETA_mins} minutes")
+display(f"{num_res} total resonator(s) = {num_res*ETA_mins} minutes = {num_res*ETA_mins//60} hours total")
 
 display(f" start time: {now.strftime("%m/%d, %I:%M:%S %p")}")
 display(f"   end time: {finishing_time.strftime("%m/%d, %I:%M:%S %p")}")
 
-# %% 
 
+# %%
 dstr = datetime.datetime.today().strftime("%m_%d_%I%M%p")
 
+all_f_res = []
 all_resonator_data = {}
 
+tstart_all = time.time()
 for idx, freq in enumerate(all_freqs):  # loop over all resonators
     freq_str = f"{freq/1e9:1.3f}".replace('.',"p")
     Measurement_Configs["f_center"] = freq
@@ -116,30 +139,32 @@ for idx, freq in enumerate(all_freqs):  # loop over all resonators
     
     res_power_sweep_dict = {}
     
+    tstart_res = time.time()
     for power in all_powers:  # for each resonator, loop over all powers
         
         Measurement_Configs["power"] = power
         
         if power in high_powers:
-            Measurement_Configs["averages"] = 10  # 6 seconds 
+            Measurement_Configs["averages"] = 50  # 4 seconds 
             print(f"{power} in high_powers - averages set to {Measurement_Configs["averages"]}")
-        
+            
         elif power in med_powers:
-            Measurement_Configs["averages"] = 50  # 12 seconds
+            Measurement_Configs["averages"] = 150  # 12 seconds
             print(f"{power} in med_powers - averages set to {Measurement_Configs["averages"]}")
         
         elif power in low_powers:
-            Measurement_Configs["averages"] = 100  # 60 seconds 
+            Measurement_Configs["averages"] = 300  # 24 seconds 
             print(f"{power} in low_powers - averages set to {Measurement_Configs["averages"]}")
             
         elif power in ultra_low_powers:
-            Measurement_Configs["averages"] = 200  # 120 seconds
+            Measurement_Configs["averages"] = 2000  # 240 seconds  (4 mins)
             print(f"{power} in ultra_low_powers - averages set to {Measurement_Configs["averages"]}")
+            
             
         """ 
             use VNA to take & download data
         """
-        
+            
         ### update configs
         PNA_X.update_configs(**Measurement_Configs)
         
@@ -154,16 +179,29 @@ for idx, freq in enumerate(all_freqs):  # loop over all resonators
         
         ### download and plot data
         s2p_df = PNA_X.return_data_s2p()
-        axes = qh.plot_s2p_df(s2p_df, plot_complex=True)
+        axes = qh.plot_s2p_df(s2p_df, plot_complex=True, zero_lines=False)
+        
+        freqs = s2p_df["Frequency"][1:].to_numpy()
+        magn = s2p_df["S21 magn_dB"][1:].to_numpy()
+        
+        f_res = round(freqs[magn.argmin()]/1e9,7)
+        print(f"the data's lowest point is at {f_res=}")
+        all_f_res.append(f_res)
         
         ### save data
-        save_dir = "./cooldown59/Line4_MQC_BOE_02"
-        expt_category = f"Line3_MQC_BOE_02_{dstr}_homophasal"
+        save_dir = r"./data/cooldown59/Line3_MQC_BOE_02"
+        expt_category = rf"Line3_MQC_BOE_02_{dstr}"
         num_avgs = Measurement_Configs["averages"]
-        meas_name = rf"VNA_{freq_str}_GHz_{power:1.2f}_dBm_{num_avgs}_avgs".replace(".","p")
+        meas_name = rf"{freq_str}GHz_{power:1.1f}dBm_{ext_atten}dBAtten_{num_avgs}avgs".replace(".","p")
 
-        filename, filepath = qh.archive_data(PNA_X, s2p_df, meas_name=meas_name, expt_category=expt_category, all_axes=axes)
+        filename, filepath = qh.archive_data(PNA_X, s2p_df, meas_name=meas_name, save_dir=save_dir, expt_category=expt_category, all_axes=axes)
 
+        
+    tstop_res = time.time() - tstart_res
+    display(f"Resonator {idx} (f_res={freq}) - {tstop_res:1.2f} seconds elapsed ({tstop_res/60:1.1f}) mins")
+    
+tstop_all = time.time() - tstart_all
+display(f"Measurement finished - {tstop_all:1.2f} seconds elapsed ({tstop_all/60:1.1f}) mins")
 
 # %%
 """ 
@@ -218,7 +256,6 @@ for idx, freq in enumerate(all_freqs):  # loop over all resonators
         
     #     ### analyze data
         
-        x
     
     # all_resonator_data[resonator_name] = res_power_sweep_dict
     
@@ -295,16 +332,16 @@ for idx, freq in enumerate(all_freqs):  # loop over all resonators
     
 # %%
 
-all_param_dicts = {}
-for key, (df, Measurement_Configs, parameters_dict, perc_errs) in fit_results.items():
-    all_param_dicts[key] = parameters_dict
+# all_param_dicts = {}
+# for key, (df, Measurement_Configs, parameters_dict, perc_errs) in fit_results.items():
+#     all_param_dicts[key] = parameters_dict
     
-df_fit_results = pd.DataFrame.from_dict(all_param_dicts, orient="index").reset_index()
-# df_fit_results.drop("phi_err", axis="columns", inplace=True)  
+# df_fit_results = pd.DataFrame.from_dict(all_param_dicts, orient="index").reset_index()
+# # df_fit_results.drop("phi_err", axis="columns", inplace=True)  
 
 
-n_pows = df_fit_results["power"].nunique()
-powers = df_fit_results["power"].unique()
+# n_pows = df_fit_results["power"].nunique()
+# powers = df_fit_results["power"].unique()
 
 # for param in ["Q", "Qi", "Qc"]:
     

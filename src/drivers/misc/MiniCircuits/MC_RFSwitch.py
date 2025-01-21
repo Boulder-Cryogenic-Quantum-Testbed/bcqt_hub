@@ -13,13 +13,14 @@
 """
 
 from urllib.request import urlopen
-import sys
+import sys, time
 
 class MC_RFSwitch():
     
     def __init__(self, device_address="192.168.0.115", timeout=5, debug=True):
         
         self.debug = debug
+        self.device_name = "RF Switch"
         self.device_address = device_address
         self.timeout = timeout
         
@@ -27,15 +28,31 @@ class MC_RFSwitch():
         if self.debug is True:
             print(self.Get_Model_Name())
             print(self.Get_Serial_No())
-            print(self.Get_Attenuation())
+            print()
     
     
+    def Format_PTE_Return(self, PTE_Return):
+        # example output:
+        #   b'MN=RCDAT-8000-30'
+        # split and return the parts on either side
+        #   of the '=', and remove b and '
+        
+        PTE_Return = str(PTE_Return).replace("b'", "").replace("'","").strip()
+        
+        if "=" in PTE_Return:
+            var, result = PTE_Return.split("=")
+        else:
+            var, result = self.device_name, PTE_Return
+            
+        
+        return var, result
     
-    def Get_HTTP_Result(self, CmdToSend):
+    
+    def Get_HTTP_Result(self, Cmd):
 
         # Specify the IP address of the switch box
-        CmdToSend = f"http://{self.device_address}:{CmdToSend}"
-
+        CmdToSend = f"http://{self.device_address}/:{Cmd}"
+        
         # Send the HTTP command and try to read the result
         try:
             HTTP_Result = urlopen(CmdToSend, timeout=self.timeout)
@@ -47,13 +64,15 @@ class MC_RFSwitch():
                 PTE_Return = "Invalid Command!"
 
         # Catch an exception if URL is incorrect (incorrect IP or disconnected)
-        except:
-            print ("Error, no response from device; check IP address and connections.")
+        except Exception as e:
+            print(f"Error: {e} \nError, no response from device; check IP address and connections.")
             PTE_Return = "No Response!"
             raise ConnectionError
 
+        var, result = self.Format_PTE_Return(PTE_Return)
+        
         # Return the response
-        return PTE_Return
+        return var, result
 
 
     def Get_Model_Name(self):
@@ -66,12 +85,20 @@ class MC_RFSwitch():
 
     def Set_Switch_State(self, switch: str, contact: int):
         # switch = A, B, C, D
-        # contact = 0 for blue, 1 for red
+        # contact = 0 for blue (left), 1 for red (right)
+        
+        
+        contact -= 1  # shift 1/2 to 0/1 to have input (GUI) match the code
+        
+        try:
+            contact = int(contact)
+        except:
+            pass
         
         if len(switch) != 1:
             raise ValueError("Switch variable must ba a string of length 1 -> e.g. 'A', 'B', 'C', or 'D'")
         
-        if contact != 0 or contact != 1:
+        if type(contact) != int:
             raise ValueError("Contact argument must be an integer - either '0' for blue, or '1' for red switch state!")
         
         cmd = f"SET{switch}={contact}"
@@ -82,8 +109,10 @@ class MC_RFSwitch():
         status = self.Get_HTTP_Result(cmd)   # Send switch command
         
         if self.debug is True:  # Print switch position
-            print(f"Command sent -> new switch status {self.Get_HTTP_Result("SWPORT?")}")       
-            
+            print(f" - new switch status {self.Get_HTTP_Result("SWPORT?")}")       
+        
+        time.sleep(0.5)
+        
         return status
 
 

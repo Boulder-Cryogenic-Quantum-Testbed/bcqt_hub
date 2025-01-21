@@ -74,8 +74,8 @@ class BaseDriver():
         ret = self.resource.query(cmd)
         return fmt(ret)
     
-    def check_instr_error_queue(self, print_output=False):
-        return '0', 'disabled'
+    # def check_instr_error_queue(self, print_output=False):
+    #     return '0', 'disabled'
     
     # @abstractmethod
     # def write_check(self, cmd: str, check_errors: bool = True):
@@ -284,31 +284,31 @@ class BaseDriver():
     ####################################################
     
     # @abstractmethod
-    # def check_instr_error_queue(self, print_output=False):
-    #     """
-    #         uses standard SCPI cmd `:SYST:ERR?` to see if there are errors in the queue
-    #     """
-    #     cmd = ':SYST:ERR?'
-    #     err = self.resource.query(cmd)
+    def check_instr_error_queue(self, print_output=False):
+        """
+            uses standard SCPI cmd `:SYST:ERR?` to see if there are errors in the queue
+        """
+        cmd = ':SYST:ERR?'
+        err = self.resource.query(cmd)
             
-    #     # Check that there were no errors
-    #     try:
-    #         status, description = err.split(',')
-    #     except:
-    #         self.print_debug(f"\nfailed check_instr_error_queue -> {err}\n")
-    #         status, description = '0', '???'
-    #         ret = self.resource.query(cmd)
-    #         return ret
+        # Check that there were no errors
+        try:
+            status, description = err.split(',')
+        except:
+            self.print_debug(f"\nfailed check_instr_error_queue -> {err}\n")
+            status, description = '0', '???'
+            ret = self.resource.query(cmd)
+            return ret
             
-    #     if print_output is True:
-    #         self.print_debug(err)
-    #         self.print_debug(f"checking instr error queue:    {err}")
+        if print_output is True:
+            self.print_debug(err)
+            self.print_debug(f"checking instr error queue:    {err}")
         
-    #     if err is None:
-    #         self.print_console("WARNING -> Query error queue has returned None!?")
-    #         status, description = '0', 'Query error queue returned None'
+        if err is None:
+            self.print_console("WARNING -> Query error queue has returned None!?")
+            status, description = '0', 'Query error queue returned None'
         
-    #     return status, description
+        return status, description
     
     def hard_reset(self):
         """ 

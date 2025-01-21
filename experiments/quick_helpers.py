@@ -31,7 +31,8 @@ def archive_data(VNA, s2p_df:pd.DataFrame, meas_name:str, expt_category:str = ''
     VNA.print_console(f"    under '{str(Path(*file_dir.parts[-6:]))}'")
     
     final_path = file_dir / filename
-    print(final_path)
+    print(file_dir.exists())
+    print(final_path.exists())
     s2p_df.to_csv(final_path)
     
     if all_axes is not None:
@@ -96,7 +97,7 @@ def strip_first_row_datetimes(df):
     
     return stripped_df, timestamp
 
-def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_edelay_fit=False,):
+def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_edelay_fit=False, zero_lines=True, plot_title=None):
     
     """
         assumes df was returned by the VNA driver's 'return_data_s2p' function
@@ -146,17 +147,23 @@ def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_e
     for sparam in sparams:
         magn_and_phase = fixed_df.filter(like=sparam)
         magn_dB, phase_rad =  magn_and_phase.iloc[:,0].values.astype(float), magn_and_phase.iloc[:,1].values.astype(float)
-        axes = plot_data_with_pandas(freqs, magn_dB=magn_dB, phase_rad=phase_rad, plot_complex=plot_complex)
-
+        axes = plot_data_with_pandas(freqs, magn_dB=magn_dB, phase_rad=phase_rad, plot_complex=plot_complex, zero_lines=zero_lines)
+        
         fig = axes[0].get_figure()
-        fig.suptitle(f"{sparam} - {title}", fontsize=18)
+        
+        if plot_title is not None:
+            fig.suptitle(plot_title, fontsize=18)
+        else:
+            fig.suptitle(f"{sparam} - {title}", fontsize=18)
+            
+            
         fig.tight_layout()
         all_axes.append(axes)
         
     return all_axes
         
 # TODO: add functionality for taking dataframes instead of individual np arrays
-def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, phase_rad=None, plot_dict=None, plot_complex=None):
+def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, phase_rad=None, plot_dict=None, plot_complex=None, zero_lines=True):
 
     
     
@@ -241,12 +248,13 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
     
     if ax3 is not None:
         ax3.plot(real, imag, 'o', markersize=6)
-        ax3.axhline(0, linestyle=':', linewidth=1, color='k')
-        ax3.axvline(0, linestyle=':', linewidth=1, color='k')
-        ax3.set_aspect("equal")
+        if zero_lines is True:
+            ax3.axhline(0, linestyle=':', linewidth=1, color='k')
+            ax3.axvline(0, linestyle=':', linewidth=1, color='k')
         ax3.set_title("Real vs Imag")
         ax3.set_xlabel("Real")
         ax3.set_ylabel("Imag")
+        ax3.set_aspect('equal', adjustable='box')
     
     freq_argmin = magn_lin.argmin()
     freq_min = freqs[freq_argmin]
