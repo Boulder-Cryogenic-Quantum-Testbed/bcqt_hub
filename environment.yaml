@@ -1,4 +1,4 @@
-name: bcqt-ctrl
+name: bcqt_hub
 channels:
   - conda-forge
 dependencies:
