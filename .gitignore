@@ -3,5 +3,6 @@
 *.csv*
 *.png
 *.zip
+*.pk1
 
 *DS_Store*
