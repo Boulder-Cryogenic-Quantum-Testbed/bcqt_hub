@@ -1,4 +1,4 @@
-# ./src/drivers/misc
+# ./bcqt_hub/drivers/misc
 
 from .MiniCircuits import MC_FindDevices
 from .MiniCircuits import MC_RFSwitch

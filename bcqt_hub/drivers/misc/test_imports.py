@@ -4,7 +4,7 @@
     listing all __init__.py's:
     
     ** bcqt_hub
-        -- src
+        -- bcqt_hub
             -- drivers
                 -- instruments
                     -->> Spectrum Analyzers, Signal Gens, VNA, etc.
@@ -26,7 +26,7 @@ def ddir(module):
 
 
 display(ddir(bcqt_hub))
-display(ddir(bcqt_hub.modules))
+display(ddir(bcqt_hub.src))
 display(ddir(bcqt_hub.drivers))
 
 

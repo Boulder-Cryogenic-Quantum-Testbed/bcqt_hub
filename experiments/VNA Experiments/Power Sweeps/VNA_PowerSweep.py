@@ -14,10 +14,10 @@ script_filename = Path(__file__).stem
 
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 
-from bcqt_hub.src.modules.DataAnalysis import DataAnalysis
+from bcqt_hub.bcqt_hub.modules.DataAnalysis import DataAnalysis
 import bcqt_hub.experiments.quick_helpers as qh
 
-from bcqt_hub.src.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 # %% import VNA driver
 
@@ -68,17 +68,19 @@ all_freqs = [
             7.010525e9  # very low Q
             ] 
 
-all_freqs = [all_freqs[0]]
 ext_atten = 30
 
 # 100 mins per resonator
-high_powers = np.arange(0, -41, -0.2).round(2) # 12 secs each = 40 min
-med_powers = np.arange(-45, -61, -1).round(2)  # 24 seconds each = 22 min
-low_powers = np.arange(-65, -76, -2.5).round(2)  # 120 secs each = 20 min
-ultra_low_powers = np.arange(-75, -91, -5).round(2)   # 240 secs = 20 min
+ultra_high_powers = np.arange(10, 0, -1).round(2)
+# high_powers = np.arange(1,-40,-1).round(2) # 12 secs each = 40 min
+med_powers = np.arange(-41, -64, -3).round(2)  # 24 seconds each = 22 min
+low_powers = np.arange(-65, -79, -3).round(2)  # 120 secs each = 20 min
+ultra_low_powers = np.arange(-80, -90, -2).round(2)   # 240 secs = 20 min
 
 # # measure every power like normal
 # all_powers = [*high_powers, *med_powers, *low_powers, *ultra_low_powers]
+all_powers = [*ultra_high_powers, *med_powers, *low_powers, *ultra_low_powers]
+print(all_powers)
 
 # measure all even
 # all_powers = [*high_powers[1::2], *med_powers[1::2], *low_powers[1::2], *ultra_low_powers[1::2]]
@@ -90,7 +92,6 @@ ultra_low_powers = np.arange(-75, -91, -5).round(2)   # 240 secs = 20 min
 # all_powers = [*high_powers[1:2], *med_powers[1:2], *low_powers[1:2], *ultra_low_powers[1:2]]
 
 # atten_low_powers = [-40]
-all_powers = [-80]
 
 
 print(f"Measuring {len(all_freqs)} resonators and {len(all_powers)} powers for each. ({len(all_powers)*len(all_freqs)} measurements)")
@@ -109,7 +110,7 @@ Measurement_Configs = {
 num_res = len(all_freqs)
 
 ETA_mins = sum([
-    len(high_powers)*2.5 // 60,
+    # len(high_powers)*2.5 // 60,
     len(med_powers)*7.5 // 60,
     len(low_powers)*75 // 60,
     len(ultra_low_powers)*450 // 60,
@@ -124,9 +125,26 @@ display(f"{num_res} total resonator(s) = {num_res*ETA_mins} minutes = {num_res*E
 display(f" start time: {now.strftime("%m/%d, %I:%M:%S %p")}")
 display(f"   end time: {finishing_time.strftime("%m/%d, %I:%M:%S %p")}")
 
+# %%
+def change_var_atten(power):
+    current_path = Path(".")
+    misc_path = Path("C:\Users\Lehnert Lab\GitHub\bcqt_hub\bcqt_hub\drivers\misc\MiniCircuits")
+    instruments_path = Path("C:\Users\Lehnert Lab\GitHub\bcqt_hub\bcqt_hub\drivers\instruments")
+
+    # easy access to all instrument drivers
+    sys.path.append(str(current_path))
+    sys.path.append(str(misc_path))
+    sys.path.append(str(instruments_path))
+
+    from MC_VarAttenuator import MC_VarAttenuator
+    ip_addr_1 = "192.168.0.113"
+        
+    atten_1 = MC_VarAttenuator(ip_addr_1)
+    atten_1.Set_Attenuation(power)
+    
 
 # %%
-dstr = datetime.datetime.today().strftime("%m_%d_%I%M%p")
+dstr = datetime.datetime.today().strftime("%m_%d_%H%M")
 
 all_f_res = []
 all_resonator_data = {}
@@ -144,20 +162,24 @@ for idx, freq in enumerate(all_freqs):  # loop over all resonators
         
         Measurement_Configs["power"] = power
         
-        if power in high_powers:
-            Measurement_Configs["averages"] = 50  # 4 seconds 
-            print(f"{power} in high_powers - averages set to {Measurement_Configs["averages"]}")
+        if power in ultra_high_powers:
+            Measurement_Configs["averages"] = 100 
+            print(f"{power} in ultra_high_powers - averages set to {Measurement_Configs["averages"]}")
+        
+        # if power in high_powers:
+        #     Measurement_Configs["averages"] = 100  # 4 seconds 
+        #     print(f"{power} in high_powers - averages set to {Measurement_Configs["averages"]}")
             
         elif power in med_powers:
-            Measurement_Configs["averages"] = 150  # 12 seconds
+            Measurement_Configs["averages"] = 500  # 12 seconds
             print(f"{power} in med_powers - averages set to {Measurement_Configs["averages"]}")
         
         elif power in low_powers:
-            Measurement_Configs["averages"] = 300  # 24 seconds 
+            Measurement_Configs["averages"] = 5000  # 24 seconds 
             print(f"{power} in low_powers - averages set to {Measurement_Configs["averages"]}")
             
         elif power in ultra_low_powers:
-            Measurement_Configs["averages"] = 2000  # 240 seconds  (4 mins)
+            Measurement_Configs["averages"] = 30000  # 240 seconds  (4 mins)
             print(f"{power} in ultra_low_powers - averages set to {Measurement_Configs["averages"]}")
             
             

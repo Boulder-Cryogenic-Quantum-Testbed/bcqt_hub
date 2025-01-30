@@ -16,16 +16,16 @@ import sys
 import matplotlib.pyplot as plt
 import pandas as pd
 
-dstr = datetime.today().strftime("%m_%d_%I%M%p")
+dstr = datetime.today().strftime("%m_%d_%H%M")
 current_dir = Path(".")
 script_filename = Path(__file__).stem
 
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 
-from bcqt_hub.src.modules.DataAnalysis import DataAnalysis
+from bcqt_hub.bcqt_hub.modules.DataAnalysis import DataAnalysis
 import bcqt_hub.experiments.quick_helpers as qh
 
-from bcqt_hub.src.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 """ 
     most of the measurements for the characterization will be taken in the interactive window, so
@@ -54,17 +54,18 @@ VNA_Keysight_InstrConfig = {
     # "rm_backend" : "@py",
     "rm_backend" : None,
     "instr_address" : 'TCPIP0::192.168.0.105::inst0::INSTR',
-    "n_points" : 1001,
-    "f_start" : 2e9,
-    "f_stop" : 10e9,
-    "if_bandwidth" : 1000,
-    "power" : -50,
-    "edelay" : 61.2,
-    "averages" : 2,
-    "sparam" : ['S11', 'S21'],  
     
-    # "segment_type" : "linear",
-    "segment_type" : "hybrid",
+    'sparam' : ['S21'],
+    "segment_type" : "linear",
+    # "segment_type" : "hybrid",
+    
+    "f_start" : 5.5e9,
+    "f_stop" : 7.6e9,
+    # "f_center" : 6e9,
+    # "f_span" : 3.5e9,
+    
+    "edelay" : 73.19, 
+    
 }
 
 ### create instrument driver from "VNA_Keysight" class, which inherits BaseDriver
@@ -74,14 +75,10 @@ PNA_X.update_configs(**VNA_Keysight_InstrConfig)
     
 # %%
 Measurement_Configs = {
-    "f_center" : 6.230608e9,
-    "f_span" : 250e3,
     "n_points" : 30001,
-    "if_bw" : 10000,
-    "power" : -30,
+    "if_bandwidth" : 1000,
+    "power" : -20,
     "averages" : 2,
-    "sparam" : ['S21'],  
-    "edelay" : 61.2e-9, 
 }
 
 
@@ -104,20 +101,35 @@ display(PNA_X.configs)    # show configs in the object itself
 ### power and recording data
 PNA_X.setup_s2p_measurement()
 
-
-# %%
-
 ### start measurement BUT DOES NOT SEND DATA TO LAB PC
 PNA_X.run_measurement() 
 
+# %%
 ### download data from instrument and plot
-s2p_df = PNA_X.return_data_s2p()
-all_axes = qh.plot_s2p_df(s2p_df, plot_complex=True)
+s2p_df = PNA_X.return_data_s2p(get_memory=True)
 
 ### save data
-save_dir = "./cooldown59/Example_Measurements"
-expt_category = "After Fixing Ground"
-meas_name = "No_TWPA"
+save_dir = "./cooldown59/"
+expt_category = "Line2_RG_Nb_Qb02"
+
+# meas_name = "Line1_RG_Nb_Ta_01_-20dBm_Zoomed"
+meas_name = "Line2_RG_Nb_Qb02"
+
+all_axes = qh.plot_s2p_df(s2p_df, title=meas_name, unwrap=True, plot_complex=False)
+
+filename, filepath = qh.archive_data(PNA_X, s2p_df, meas_name=meas_name, expt_category=expt_category, all_axes=all_axes[0])
+
+# %%
+
+find_peaks_kwargs = {
+    "height" : None,
+    "threshold" : None,
+    "distance" : 10,
+    "prominence" : 10,
+    "width" : None,
+}
+
+all_axes = qh.find_resonators(s2p_df, find_peaks_kwargs=find_peaks_kwargs, fig_title=f"\n{expt_category}\n{meas_name}") 
 
 filename, filepath = qh.archive_data(PNA_X, s2p_df, meas_name=meas_name, expt_category=expt_category, all_axes=all_axes)
 

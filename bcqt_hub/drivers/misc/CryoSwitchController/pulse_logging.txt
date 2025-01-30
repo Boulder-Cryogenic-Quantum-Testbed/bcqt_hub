@@ -1,0 +1,324 @@
+Disconnect-> Port:A-1, CurrentMax:70 Timestamp:1731809619
+Disconnect-> Port:B-1, CurrentMax:71 Timestamp:1731809620
+Disconnect-> Port:A-2, CurrentMax:71 Timestamp:1731809621
+Disconnect-> Port:B-2, CurrentMax:71 Timestamp:1731809622
+Disconnect-> Port:A-3, CurrentMax:70 Timestamp:1731809622
+Disconnect-> Port:B-3, CurrentMax:71 Timestamp:1731809623
+Disconnect-> Port:A-4, CurrentMax:71 Timestamp:1731809623
+Disconnect-> Port:B-4, CurrentMax:67 Timestamp:1731809625
+Disconnect-> Port:A-5, CurrentMax:71 Timestamp:1731809625
+Disconnect-> Port:B-5, CurrentMax:71 Timestamp:1731809626
+Disconnect-> Port:A-6, CurrentMax:71 Timestamp:1731809626
+Disconnect-> Port:B-6, CurrentMax:71 Timestamp:1731809627
+Disconnect-> Port:A-1, CurrentMax:71 Timestamp:1731809666
+Disconnect-> Port:B-1, CurrentMax:71 Timestamp:1731809667
+Connect   -> Port:A-1, CurrentMax:68 Timestamp:1731809677
+Connect   -> Port:B-1, CurrentMax:68 Timestamp:1731809678
+Disconnect-> Port:A-1, CurrentMax:70 Timestamp:1731810048
+Disconnect-> Port:B-1, CurrentMax:71 Timestamp:1731810050
+Disconnect-> Port:A-2, CurrentMax:71 Timestamp:1731810050
+Disconnect-> Port:B-2, CurrentMax:67 Timestamp:1731810051
+Disconnect-> Port:A-3, CurrentMax:65 Timestamp:1731810051
+Disconnect-> Port:B-3, CurrentMax:71 Timestamp:1731810052
+Disconnect-> Port:A-4, CurrentMax:68 Timestamp:1731810053
+Disconnect-> Port:B-4, CurrentMax:71 Timestamp:1731810054
+Disconnect-> Port:A-5, CurrentMax:71 Timestamp:1731810054
+Disconnect-> Port:B-5, CurrentMax:71 Timestamp:1731810055
+Disconnect-> Port:A-6, CurrentMax:71 Timestamp:1731810056
+Disconnect-> Port:B-6, CurrentMax:71 Timestamp:1731810057
+Connect   -> Port:A-1, CurrentMax:68 Timestamp:1731810139
+Connect   -> Port:B-1, CurrentMax:68 Timestamp:1731810140
+Connect   -> Port:A-1, CurrentMax:70 Timestamp:1731810155
+Connect   -> Port:B-1, CurrentMax:71 Timestamp:1731810156
+Connect   -> Port:A-2, CurrentMax:70 Timestamp:1731810181
+Connect   -> Port:B-2, CurrentMax:70 Timestamp:1731810183
+Disconnect-> Port:A-1, CurrentMax:70 Timestamp:1731810185
+Disconnect-> Port:B-1, CurrentMax:71 Timestamp:1731810186
+Connect   -> Port:A-3, CurrentMax:67 Timestamp:1731810211
+Connect   -> Port:B-3, CurrentMax:71 Timestamp:1731810212
+Disconnect-> Port:A-2, CurrentMax:71 Timestamp:1731810214
+Disconnect-> Port:B-2, CurrentMax:71 Timestamp:1731810216
+Connect   -> Port:A-4, CurrentMax:66 Timestamp:1731810523
+Connect   -> Port:B-4, CurrentMax:71 Timestamp:1731810524
+Disconnect-> Port:A-3, CurrentMax:70 Timestamp:1731810526
+Disconnect-> Port:B-3, CurrentMax:71 Timestamp:1731810527
+Connect   -> Port:A-5, CurrentMax:71 Timestamp:1731810603
+Connect   -> Port:B-5, CurrentMax:70 Timestamp:1731810605
+Disconnect-> Port:A-4, CurrentMax:71 Timestamp:1731810607
+Disconnect-> Port:B-4, CurrentMax:70 Timestamp:1731810608
+Disconnect-> Port:A-1, CurrentMax:71 Timestamp:1731810795
+Disconnect-> Port:B-1, CurrentMax:71 Timestamp:1731810797
+Disconnect-> Port:A-2, CurrentMax:71 Timestamp:1731810797
+Disconnect-> Port:B-2, CurrentMax:71 Timestamp:1731810798
+Disconnect-> Port:A-3, CurrentMax:71 Timestamp:1731810798
+Disconnect-> Port:B-3, CurrentMax:71 Timestamp:1731810800
+Disconnect-> Port:A-4, CurrentMax:71 Timestamp:1731810800
+Disconnect-> Port:B-4, CurrentMax:71 Timestamp:1731810801
+Disconnect-> Port:A-5, CurrentMax:70 Timestamp:1731810801
+Disconnect-> Port:B-5, CurrentMax:71 Timestamp:1731810802
+Disconnect-> Port:A-6, CurrentMax:71 Timestamp:1731810803
+Disconnect-> Port:B-6, CurrentMax:71 Timestamp:1731810804
+Connect   -> Port:A-1, CurrentMax:68 Timestamp:1731810805
+Connect   -> Port:B-1, CurrentMax:68 Timestamp:1731810807
+Disconnect-> Port:A-1, CurrentMax:70 Timestamp:1731810884
+Disconnect-> Port:B-1, CurrentMax:71 Timestamp:1731810885
+Connect   -> Port:A-2, CurrentMax:70 Timestamp:1731810885
+Connect   -> Port:B-2, CurrentMax:70 Timestamp:1731810886
+Disconnect-> Port:A-2, CurrentMax:70 Timestamp:1731811043
+Disconnect-> Port:B-2, CurrentMax:71 Timestamp:1731811044
+Connect   -> Port:A-3, CurrentMax:70 Timestamp:1731811045
+Connect   -> Port:B-3, CurrentMax:71 Timestamp:1731811046
+Disconnect-> Port:A-3, CurrentMax:70 Timestamp:1731811510
+Disconnect-> Port:B-3, CurrentMax:71 Timestamp:1731811512
+Connect   -> Port:A-4, CurrentMax:70 Timestamp:1731811512
+Connect   -> Port:B-4, CurrentMax:70 Timestamp:1731811513
+Disconnect-> Port:A-4, CurrentMax:71 Timestamp:1731811662
+Disconnect-> Port:B-4, CurrentMax:70 Timestamp:1731811663
+Connect   -> Port:A-5, CurrentMax:71 Timestamp:1731811664
+Connect   -> Port:B-5, CurrentMax:70 Timestamp:1731811665
+Disconnect-> Port:A-5, CurrentMax:70 Timestamp:1731811801
+Disconnect-> Port:B-5, CurrentMax:71 Timestamp:1731811802
+Connect   -> Port:A-6, CurrentMax:71 Timestamp:1731811802
+Connect   -> Port:B-6, CurrentMax:71 Timestamp:1731811804
+Disconnect-> Port:A-6, CurrentMax:54 Timestamp:1732056542 *Warnings: Low current detected!
+Disconnect-> Port:B-6, CurrentMax:54 Timestamp:1732056542 *Warnings: Low current detected!
+Connect   -> Port:A-5, CurrentMax:59 Timestamp:1732056542 *Warnings: Low current detected!
+Connect   -> Port:B-5, CurrentMax:62 Timestamp:1732056542
+Disconnect-> Port:A-5, CurrentMax:56 Timestamp:1732056855 *Warnings: Low current detected!
+Disconnect-> Port:B-5, CurrentMax:57 Timestamp:1732056855 *Warnings: Low current detected!
+Connect   -> Port:A-3, CurrentMax:61 Timestamp:1732056856
+Connect   -> Port:B-3, CurrentMax:56 Timestamp:1732056856 *Warnings: Low current detected!
+Disconnect-> Port:A-3, CurrentMax:56 Timestamp:1732056908 *Warnings: Low current detected!
+Disconnect-> Port:B-3, CurrentMax:54 Timestamp:1732056908 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:57 Timestamp:1732056908 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:61 Timestamp:1732056908
+Disconnect-> Port:A-1, CurrentMax:46 Timestamp:1732056963 *Warnings: Low current detected!
+Disconnect-> Port:B-1, CurrentMax:61 Timestamp:1732056963
+Connect   -> Port:A-2, CurrentMax:52 Timestamp:1732056963 *Warnings: Low current detected!
+Connect   -> Port:B-2, CurrentMax:57 Timestamp:1732056963 *Warnings: Low current detected!
+Disconnect-> Port:A-2, CurrentMax:50 Timestamp:1732057343 *Warnings: Low current detected!
+Disconnect-> Port:B-2, CurrentMax:50 Timestamp:1732057343 *Warnings: Low current detected!
+Connect   -> Port:A-4, CurrentMax:59 Timestamp:1732057343 *Warnings: Low current detected!
+Connect   -> Port:B-4, CurrentMax:54 Timestamp:1732057344 *Warnings: Low current detected!
+Disconnect-> Port:A-4, CurrentMax:53 Timestamp:1732118265 *Warnings: Low current detected!
+Disconnect-> Port:B-4, CurrentMax:57 Timestamp:1732118265 *Warnings: Low current detected!
+Connect   -> Port:A-4, CurrentMax:57 Timestamp:1732118265 *Warnings: Low current detected!
+Connect   -> Port:B-4, CurrentMax:52 Timestamp:1732118266 *Warnings: Low current detected!
+Disconnect-> Port:A-2, CurrentMax:81 Timestamp:1736894358
+Disconnect-> Port:B-2, CurrentMax:81 Timestamp:1736894360
+Connect   -> Port:A-4, CurrentMax:58 Timestamp:1736894360 *Warnings: Low current detected!
+Connect   -> Port:B-4, CurrentMax:54 Timestamp:1736894361 *Warnings: Low current detected!
+Disconnect-> Port:A-3, CurrentMax:58 Timestamp:1736895047 *Warnings: Low current detected!
+Disconnect-> Port:B-3, CurrentMax:54 Timestamp:1736895049 *Warnings: Low current detected!
+Disconnect-> Port:A-4, CurrentMax:53 Timestamp:1736895909 *Warnings: Low current detected!
+Disconnect-> Port:B-4, CurrentMax:58 Timestamp:1736895910 *Warnings: Low current detected!
+Connect   -> Port:A-3, CurrentMax:59 Timestamp:1736895911 *Warnings: Low current detected!
+Connect   -> Port:B-3, CurrentMax:53 Timestamp:1736895912 *Warnings: Low current detected!
+Disconnect-> Port:A-3, CurrentMax:56 Timestamp:1736896422 *Warnings: Low current detected!
+Disconnect-> Port:B-3, CurrentMax:54 Timestamp:1736896423 *Warnings: Low current detected!
+Connect   -> Port:A-4, CurrentMax:58 Timestamp:1736896424 *Warnings: Low current detected!
+Connect   -> Port:B-4, CurrentMax:50 Timestamp:1736896425 *Warnings: Low current detected!
+Disconnect-> Port:A-4, CurrentMax:52 Timestamp:1736898742 *Warnings: Low current detected!
+Disconnect-> Port:B-4, CurrentMax:57 Timestamp:1736898744 *Warnings: Low current detected!
+Connect   -> Port:A-5, CurrentMax:61 Timestamp:1736898744
+Connect   -> Port:B-5, CurrentMax:62 Timestamp:1736898745
+Disconnect-> Port:A-1, CurrentMax:81 Timestamp:1736901249
+Disconnect-> Port:B-1, CurrentMax:81 Timestamp:1736901260
+Disconnect-> Port:A-2, CurrentMax:81 Timestamp:1736901270
+Disconnect-> Port:B-2, CurrentMax:81 Timestamp:1736901280
+Disconnect-> Port:A-3, CurrentMax:81 Timestamp:1736901290
+Disconnect-> Port:B-3, CurrentMax:81 Timestamp:1736901300
+Disconnect-> Port:A-5, CurrentMax:53 Timestamp:1736901310 *Warnings: Low current detected!
+Disconnect-> Port:B-5, CurrentMax:54 Timestamp:1736901321 *Warnings: Low current detected!
+Disconnect-> Port:A-6, CurrentMax:81 Timestamp:1736901331
+Disconnect-> Port:B-6, CurrentMax:81 Timestamp:1736901341
+Connect   -> Port:A-4, CurrentMax:57 Timestamp:1736901351 *Warnings: Low current detected!
+Connect   -> Port:B-4, CurrentMax:50 Timestamp:1736901361 *Warnings: Low current detected!
+Disconnect-> Port:A-4, CurrentMax:52 Timestamp:1737004071 *Warnings: Low current detected!
+Disconnect-> Port:B-4, CurrentMax:55 Timestamp:1737004072 *Warnings: Low current detected!
+Connect   -> Port:A-3, CurrentMax:61 Timestamp:1737004073
+Connect   -> Port:B-3, CurrentMax:53 Timestamp:1737004074 *Warnings: Low current detected!
+Disconnect-> Port:A-3, CurrentMax:56 Timestamp:1737065155 *Warnings: Low current detected!
+Disconnect-> Port:B-3, CurrentMax:54 Timestamp:1737065166 *Warnings: Low current detected!
+Connect   -> Port:A-4, CurrentMax:57 Timestamp:1737065189 *Warnings: Low current detected!
+Connect   -> Port:B-4, CurrentMax:50 Timestamp:1737065203 *Warnings: Low current detected!
+Connect   -> Port:A-4, CurrentMax:81 Timestamp:1737065836
+Connect   -> Port:B-4, CurrentMax:81 Timestamp:1737065839
+Disconnect-> Port:A-4, CurrentMax:50 Timestamp:1737142722 *Warnings: Low current detected!
+Disconnect-> Port:B-4, CurrentMax:54 Timestamp:1737142723 *Warnings: Low current detected!
+Connect   -> Port:A-3, CurrentMax:59 Timestamp:1737142724 *Warnings: Low current detected!
+Connect   -> Port:B-3, CurrentMax:53 Timestamp:1737142725 *Warnings: Low current detected!
+Connect   -> Port:A-3, CurrentMax:81 Timestamp:1737143144
+Connect   -> Port:B-3, CurrentMax:81 Timestamp:1737143145
+Disconnect-> Port:A-1, CurrentMax:5 Timestamp:1737154910 *Warnings: Low current detected!
+Disconnect-> Port:B-1, CurrentMax:81 Timestamp:1737154911
+Disconnect-> Port:A-2, CurrentMax:81 Timestamp:1737154912
+Disconnect-> Port:B-2, CurrentMax:81 Timestamp:1737154913
+Disconnect-> Port:A-3, CurrentMax:53 Timestamp:1737154915 *Warnings: Low current detected!
+Disconnect-> Port:B-3, CurrentMax:52 Timestamp:1737154916 *Warnings: Low current detected!
+Disconnect-> Port:A-4, CurrentMax:81 Timestamp:1737154917
+Disconnect-> Port:B-4, CurrentMax:81 Timestamp:1737154918
+Disconnect-> Port:A-5, CurrentMax:81 Timestamp:1737154919
+Disconnect-> Port:B-5, CurrentMax:81 Timestamp:1737154920
+Disconnect-> Port:A-6, CurrentMax:83 Timestamp:1737154922
+Disconnect-> Port:B-6, CurrentMax:81 Timestamp:1737154923
+Connect   -> Port:A-3, CurrentMax:58 Timestamp:1737154924 *Warnings: Low current detected!
+Connect   -> Port:B-3, CurrentMax:52 Timestamp:1737154925 *Warnings: Low current detected!
+Disconnect-> Port:A-3, CurrentMax:57 Timestamp:1737359563 *Warnings: Low current detected!
+Disconnect-> Port:B-3, CurrentMax:54 Timestamp:1737359579 *Warnings: Low current detected!
+Connect   -> Port:A-4, CurrentMax:58 Timestamp:1737359580 *Warnings: Low current detected!
+Connect   -> Port:B-4, CurrentMax:50 Timestamp:1737359582 *Warnings: Low current detected!
+Disconnect-> Port:A-4, CurrentMax:53 Timestamp:1737422321 *Warnings: Low current detected!
+Disconnect-> Port:B-4, CurrentMax:57 Timestamp:1737422322 *Warnings: Low current detected!
+Connect   -> Port:A-6, CurrentMax:57 Timestamp:1737422323 *Warnings: Low current detected!
+Connect   -> Port:B-6, CurrentMax:53 Timestamp:1737422324 *Warnings: Low current detected!
+Disconnect-> Port:A-6, CurrentMax:54 Timestamp:1737487705 *Warnings: Low current detected!
+Disconnect-> Port:B-6, CurrentMax:53 Timestamp:1737487706 *Warnings: Low current detected!
+Connect   -> Port:A-3, CurrentMax:61 Timestamp:1737487707
+Connect   -> Port:B-3, CurrentMax:53 Timestamp:1737487708 *Warnings: Low current detected!
+Disconnect-> Port:A-3, CurrentMax:56 Timestamp:1737567902 *Warnings: Low current detected!
+Disconnect-> Port:B-3, CurrentMax:54 Timestamp:1737567903 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:57 Timestamp:1737567905 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:61 Timestamp:1737567906
+Disconnect-> Port:A-1, CurrentMax:53 Timestamp:1737573611 *Warnings: Low current detected!
+Disconnect-> Port:B-1, CurrentMax:62 Timestamp:1737573612
+Connect   -> Port:A-2, CurrentMax:53 Timestamp:1737573613 *Warnings: Low current detected!
+Connect   -> Port:B-2, CurrentMax:59 Timestamp:1737573614 *Warnings: Low current detected!
+Disconnect-> Port:A-2, CurrentMax:50 Timestamp:1737573781 *Warnings: Low current detected!
+Disconnect-> Port:B-2, CurrentMax:50 Timestamp:1737573783 *Warnings: Low current detected!
+Connect   -> Port:A-3, CurrentMax:58 Timestamp:1737573784 *Warnings: Low current detected!
+Connect   -> Port:B-3, CurrentMax:53 Timestamp:1737573785 *Warnings: Low current detected!
+Disconnect-> Port:A-3, CurrentMax:54 Timestamp:1737573824 *Warnings: Low current detected!
+Disconnect-> Port:B-3, CurrentMax:53 Timestamp:1737573825 *Warnings: Low current detected!
+Connect   -> Port:A-4, CurrentMax:57 Timestamp:1737573827 *Warnings: Low current detected!
+Connect   -> Port:B-4, CurrentMax:50 Timestamp:1737573828 *Warnings: Low current detected!
+Disconnect-> Port:A-4, CurrentMax:50 Timestamp:1737573874 *Warnings: Low current detected!
+Disconnect-> Port:B-4, CurrentMax:54 Timestamp:1737573875 *Warnings: Low current detected!
+Connect   -> Port:A-5, CurrentMax:61 Timestamp:1737573877
+Connect   -> Port:B-5, CurrentMax:62 Timestamp:1737573878
+Disconnect-> Port:A-5, CurrentMax:54 Timestamp:1737573932 *Warnings: Low current detected!
+Disconnect-> Port:B-5, CurrentMax:55 Timestamp:1737573933 *Warnings: Low current detected!
+Connect   -> Port:A-6, CurrentMax:54 Timestamp:1737573934 *Warnings: Low current detected!
+Connect   -> Port:B-6, CurrentMax:52 Timestamp:1737573935 *Warnings: Low current detected!
+Disconnect-> Port:A-6, CurrentMax:52 Timestamp:1737573984 *Warnings: Low current detected!
+Disconnect-> Port:B-6, CurrentMax:52 Timestamp:1737573985 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:54 Timestamp:1737573986 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:58 Timestamp:1737573987 *Warnings: Low current detected!
+Disconnect-> Port:A-1, CurrentMax:52 Timestamp:1737574510 *Warnings: Low current detected!
+Disconnect-> Port:B-1, CurrentMax:61 Timestamp:1737574511
+Connect   -> Port:A-2, CurrentMax:52 Timestamp:1737574512 *Warnings: Low current detected!
+Connect   -> Port:B-2, CurrentMax:58 Timestamp:1737574513 *Warnings: Low current detected!
+Disconnect-> Port:A-2, CurrentMax:50 Timestamp:1737575760 *Warnings: Low current detected!
+Disconnect-> Port:B-2, CurrentMax:50 Timestamp:1737575761 *Warnings: Low current detected!
+Connect   -> Port:A-5, CurrentMax:59 Timestamp:1737575762 *Warnings: Low current detected!
+Connect   -> Port:B-5, CurrentMax:62 Timestamp:1737575764
+Disconnect-> Port:A-5, CurrentMax:55 Timestamp:1737584734 *Warnings: Low current detected!
+Disconnect-> Port:B-5, CurrentMax:57 Timestamp:1737584735 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:55 Timestamp:1737584736 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:59 Timestamp:1737584737 *Warnings: Low current detected!
+Disconnect-> Port:A-1, CurrentMax:53 Timestamp:1737595037 *Warnings: Low current detected!
+Disconnect-> Port:A-1, CurrentMax:81 Timestamp:1737595121
+Disconnect-> Port:B-1, CurrentMax:61 Timestamp:1737595122
+Connect   -> Port:A-3, CurrentMax:61 Timestamp:1737595124
+Connect   -> Port:B-3, CurrentMax:54 Timestamp:1737595125 *Warnings: Low current detected!
+Disconnect-> Port:A-3, CurrentMax:55 Timestamp:1737672371 *Warnings: Low current detected!
+Disconnect-> Port:B-3, CurrentMax:53 Timestamp:1737672372 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:54 Timestamp:1737672373 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:58 Timestamp:1737672374 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:81 Timestamp:1737672384
+Connect   -> Port:B-1, CurrentMax:81 Timestamp:1737672386
+Disconnect-> Port:A-1, CurrentMax:50 Timestamp:1737698375 *Warnings: Low current detected!
+Disconnect-> Port:A-1, CurrentMax:81 Timestamp:1737698382
+Disconnect-> Port:B-1, CurrentMax:58 Timestamp:1737698383 *Warnings: Low current detected!
+Connect   -> Port:A-3, CurrentMax:59 Timestamp:1737698384 *Warnings: Low current detected!
+Connect   -> Port:B-3, CurrentMax:53 Timestamp:1737698385 *Warnings: Low current detected!
+Disconnect-> Port:A-3, CurrentMax:57 Timestamp:1737744228 *Warnings: Low current detected!
+Disconnect-> Port:B-3, CurrentMax:54 Timestamp:1737744229 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:54 Timestamp:1737744230 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:57 Timestamp:1737744231 *Warnings: Low current detected!
+Disconnect-> Port:A-1, CurrentMax:48 Timestamp:1737956953 *Warnings: Low current detected!
+Disconnect-> Port:B-1, CurrentMax:61 Timestamp:1737956954
+Connect   -> Port:A-2, CurrentMax:52 Timestamp:1737956956 *Warnings: Low current detected!
+Connect   -> Port:B-2, CurrentMax:58 Timestamp:1737956957 *Warnings: Low current detected!
+Disconnect-> Port:A-1, CurrentMax:81 Timestamp:1737957270
+Disconnect-> Port:B-1, CurrentMax:81 Timestamp:1737957272
+Connect   -> Port:A-2, CurrentMax:81 Timestamp:1737957273
+Connect   -> Port:B-2, CurrentMax:81 Timestamp:1737957274
+Disconnect-> Port:A-3, CurrentMax:81 Timestamp:1737957697
+Disconnect-> Port:B-3, CurrentMax:81 Timestamp:1737957699
+Disconnect-> Port:A-2, CurrentMax:48 Timestamp:1737957706 *Warnings: Low current detected!
+Disconnect-> Port:B-2, CurrentMax:50 Timestamp:1737957708 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:54 Timestamp:1737957718 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:59 Timestamp:1737957719 *Warnings: Low current detected!
+Disconnect-> Port:A-1, CurrentMax:50 Timestamp:1737957753 *Warnings: Low current detected!
+Disconnect-> Port:B-1, CurrentMax:59 Timestamp:1737957754 *Warnings: Low current detected!
+Connect   -> Port:A-2, CurrentMax:52 Timestamp:1737957772 *Warnings: Low current detected!
+Connect   -> Port:B-2, CurrentMax:57 Timestamp:1737957773 *Warnings: Low current detected!
+Disconnect-> Port:A-2, CurrentMax:49 Timestamp:1738001609 *Warnings: Low current detected!
+Disconnect-> Port:B-2, CurrentMax:50 Timestamp:1738001610 *Warnings: Low current detected!
+Connect   -> Port:A-5, CurrentMax:59 Timestamp:1738001611 *Warnings: Low current detected!
+Connect   -> Port:B-5, CurrentMax:62 Timestamp:1738001612
+Disconnect-> Port:A-5, CurrentMax:56 Timestamp:1738002063 *Warnings: Low current detected!
+Disconnect-> Port:B-5, CurrentMax:57 Timestamp:1738002065 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:56 Timestamp:1738002066 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:61 Timestamp:1738002067
+Disconnect-> Port:A-2, CurrentMax:81 Timestamp:1738003442
+Disconnect-> Port:B-2, CurrentMax:81 Timestamp:1738003443
+Connect   -> Port:A-1, CurrentMax:81 Timestamp:1738003444
+Connect   -> Port:B-1, CurrentMax:81 Timestamp:1738003445
+Disconnect-> Port:A-1, CurrentMax:48 Timestamp:1738003450 *Warnings: Low current detected!
+Disconnect-> Port:B-1, CurrentMax:55 Timestamp:1738003451 *Warnings: Low current detected!
+Connect   -> Port:A-2, CurrentMax:52 Timestamp:1738003453 *Warnings: Low current detected!
+Connect   -> Port:B-2, CurrentMax:58 Timestamp:1738003454 *Warnings: Low current detected!
+Disconnect-> Port:A-2, CurrentMax:49 Timestamp:1738003937 *Warnings: Low current detected!
+Disconnect-> Port:B-2, CurrentMax:50 Timestamp:1738003938 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:54 Timestamp:1738003940 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:58 Timestamp:1738003941 *Warnings: Low current detected!
+Disconnect-> Port:A-1, CurrentMax:50 Timestamp:1738008149 *Warnings: Low current detected!
+Disconnect-> Port:B-1, CurrentMax:59 Timestamp:1738008150 *Warnings: Low current detected!
+Connect   -> Port:A-2, CurrentMax:52 Timestamp:1738008151 *Warnings: Low current detected!
+Connect   -> Port:B-2, CurrentMax:57 Timestamp:1738008152 *Warnings: Low current detected!
+Disconnect-> Port:A-2, CurrentMax:49 Timestamp:1738009989 *Warnings: Low current detected!
+Disconnect-> Port:B-2, CurrentMax:50 Timestamp:1738009991 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:54 Timestamp:1738009992 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:58 Timestamp:1738009993 *Warnings: Low current detected!
+Disconnect-> Port:A-1, CurrentMax:50 Timestamp:1738010290 *Warnings: Low current detected!
+Disconnect-> Port:B-1, CurrentMax:59 Timestamp:1738010292 *Warnings: Low current detected!
+Connect   -> Port:A-2, CurrentMax:53 Timestamp:1738010293 *Warnings: Low current detected!
+Connect   -> Port:B-2, CurrentMax:57 Timestamp:1738010294 *Warnings: Low current detected!
+Disconnect-> Port:A-2, CurrentMax:49 Timestamp:1738011065 *Warnings: Low current detected!
+Disconnect-> Port:B-2, CurrentMax:50 Timestamp:1738011066 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:54 Timestamp:1738011067 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:58 Timestamp:1738011068 *Warnings: Low current detected!
+Disconnect-> Port:A-1, CurrentMax:52 Timestamp:1738015660 *Warnings: Low current detected!
+Disconnect-> Port:B-1, CurrentMax:61 Timestamp:1738015661
+Connect   -> Port:A-2, CurrentMax:52 Timestamp:1738015663 *Warnings: Low current detected!
+Connect   -> Port:B-2, CurrentMax:57 Timestamp:1738015664 *Warnings: Low current detected!
+Disconnect-> Port:A-1, CurrentMax:81 Timestamp:1738090079
+Disconnect-> Port:B-1, CurrentMax:81 Timestamp:1738090080
+Disconnect-> Port:A-3, CurrentMax:81 Timestamp:1738090081
+Disconnect-> Port:B-3, CurrentMax:81 Timestamp:1738090083
+Disconnect-> Port:A-4, CurrentMax:81 Timestamp:1738090084
+Disconnect-> Port:B-4, CurrentMax:81 Timestamp:1738090085
+Disconnect-> Port:A-5, CurrentMax:81 Timestamp:1738090086
+Disconnect-> Port:B-5, CurrentMax:81 Timestamp:1738090087
+Disconnect-> Port:A-6, CurrentMax:81 Timestamp:1738090089
+Disconnect-> Port:B-6, CurrentMax:81 Timestamp:1738090090
+Connect   -> Port:A-2, CurrentMax:81 Timestamp:1738090091
+Connect   -> Port:B-2, CurrentMax:81 Timestamp:1738090092
+Disconnect-> Port:A-2, CurrentMax:48 Timestamp:1738096361 *Warnings: Low current detected!
+Disconnect-> Port:B-2, CurrentMax:52 Timestamp:1738096362 *Warnings: Low current detected!
+Connect   -> Port:A-1, CurrentMax:54 Timestamp:1738096363 *Warnings: Low current detected!
+Connect   -> Port:B-1, CurrentMax:59 Timestamp:1738096365 *Warnings: Low current detected!
+Disconnect-> Port:A-2, CurrentMax:81 Timestamp:1738187202
+Disconnect-> Port:B-2, CurrentMax:81 Timestamp:1738187203
+Disconnect-> Port:A-3, CurrentMax:81 Timestamp:1738187205
+Disconnect-> Port:B-3, CurrentMax:81 Timestamp:1738187206
+Disconnect-> Port:A-4, CurrentMax:81 Timestamp:1738187207
+Disconnect-> Port:B-4, CurrentMax:81 Timestamp:1738187208
+Disconnect-> Port:A-5, CurrentMax:81 Timestamp:1738187209
+Disconnect-> Port:B-5, CurrentMax:81 Timestamp:1738187210
+Disconnect-> Port:A-6, CurrentMax:81 Timestamp:1738187212
+Disconnect-> Port:B-6, CurrentMax:81 Timestamp:1738187213
+Connect   -> Port:A-1, CurrentMax:80 Timestamp:1738187214
+Connect   -> Port:B-1, CurrentMax:81 Timestamp:1738187215

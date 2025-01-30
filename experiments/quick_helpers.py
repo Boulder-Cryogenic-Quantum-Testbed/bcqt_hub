@@ -6,15 +6,65 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import scipy as sp
+from scipy.signal import find_peaks
 from datetime import datetime
 from pathlib import Path
+import sys
+sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub\bcqt_hub\experiments")
+import quick_helpers as qh
 
-def archive_data(VNA, s2p_df:pd.DataFrame, meas_name:str, expt_category:str = '', save_dir:str = "./data", all_axes=None):
+def find_resonators(s2p_df, fig_title="", find_peaks_kwargs={}, plot_phase = False):
+    
+    freqs, magn_dB, phase_rad = s2p_df["Frequency"], s2p_df["S21 magn_dB"], s2p_df["S21 phase_rad"]
+    num_pts = len(freqs)
+    
+    # fig, axes = plt.subplots(2,1,figsize=(12,9))
+    # ax1, ax2 = axes
+    # ax1.plot(freqs, magn_dB, color='r')
+    # ax2.plot(freqs, phase_rad, color='b')
+
+    axes = qh.plot_s2p_df(s2p_df, title=fig_title, unwrap=True, plot_complex=False)
+    ax1, ax2 = axes[0]
+    fig = ax1.get_figure()
+    
+    peaks, _ = find_peaks(-magn_dB, **find_peaks_kwargs)
+
+    display(peaks)
+    
+    for num, idx in enumerate(peaks):
+        if num >= 10:
+            break
+        ax1.plot(freqs[idx], magn_dB[idx], "o", fillstyle="none", markeredgewidth=2, markersize=10,
+                label=f"{freqs[idx]/1e6:1.2f} MHz")
+        ax2.plot(freqs[idx], phase_rad[idx], "o", fillstyle="none", markeredgewidth=2, markersize=10,
+                label=f"{freqs[idx]/1e6:1.2f} MHz")
+    
+    ax1.grid()
+    ax1.axhline(0, linestyle='--', linewidth=2, color='k')
+    
+    ax2.grid()
+    ax2.axhline(0, linestyle='--', linewidth=2, color='k')
+    
+    if plot_phase is False:
+        fig.delaxes(ax2)
+        y_legend = 0.5
+    else:
+        y_legend = 0.0
+        
+    fig.suptitle(f"Peaks found using find_resonator()\n{fig_title}", x=0.25)
+    ax1.legend(loc="center left", bbox_to_anchor=(1.05, y_legend))
+    fig.tight_layout()
+    
+    return peaks, axes
+    
+    
+
+def archive_data(VNA, s2p_df:pd.DataFrame, meas_name:str, expt_category:str = '', save_dir:str = "./data", all_axes=[]):
     # check if save_dir is a path or string
     if not isinstance(save_dir, Path):
         save_dir = Path(save_dir).absolute()
         
-    timestamp = datetime.today().strftime("%m_%d_%I%M%p")
+    timestamp = datetime.today().strftime("%m_%d_%H%M")
     # file_dir = save_dir / expt_category / meas_name / timestamp
     file_dir = save_dir / expt_category / meas_name
     
@@ -35,16 +85,13 @@ def archive_data(VNA, s2p_df:pd.DataFrame, meas_name:str, expt_category:str = ''
     print(final_path.exists())
     s2p_df.to_csv(final_path)
     
-    if all_axes is not None:
-        for axes in all_axes:
-            ax = axes[0]
+    if len(all_axes) != 0:
+        for ax in all_axes:
             fig = ax.get_figure()
-            title = fig.get_suptitle().replace(" - ","_") + f"{expt_no:03d}.png"
-            fig_filename = file_dir / title
+            # title = fig.get_suptitle().replace(" - ","_") + f"{expt_no:03d}.png"
             fig.tight_layout()
-            fig.savefig(fig_filename)
+            fig.savefig(f"{str(final_path).replace(".csv",".png")}", bbox_inches='tight')
             plt.show()
-            print(fig_filename)
             
     
     return filename, final_path.parent
@@ -97,7 +144,7 @@ def strip_first_row_datetimes(df):
     
     return stripped_df, timestamp
 
-def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_edelay_fit=False, zero_lines=True, plot_title=None):
+def plot_s2p_df(df, axes=None, plot_complex=True, unwrap=True, title="", zero_lines=True, plot_title=None):
     
     """
         assumes df was returned by the VNA driver's 'return_data_s2p' function
@@ -132,8 +179,7 @@ def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_e
             fixed_df.drop(columns=col, inplace=True)
             
             fixed_df["Frequency"] = fixed_df["Frequency"].values.astype(float)
-            
-            
+    
     
     # grab the first three letters of each column
     # then remove duplicates so we have a list of all s-parameters
@@ -147,14 +193,34 @@ def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_e
     for sparam in sparams:
         magn_and_phase = fixed_df.filter(like=sparam)
         magn_dB, phase_rad =  magn_and_phase.iloc[:,0].values.astype(float), magn_and_phase.iloc[:,1].values.astype(float)
-        axes = plot_data_with_pandas(freqs, magn_dB=magn_dB, phase_rad=phase_rad, plot_complex=plot_complex, zero_lines=zero_lines)
+        
+        if unwrap is True:
+            phase_rad = np.unwrap(phase_rad)
+            
+        axes = plot_data_with_pandas(freqs, magn_dB=magn_dB, phase_rad=phase_rad, plot_complex=plot_complex, zero_lines=zero_lines,
+                                     plot_dict={"magn_label":"Data"})
+        
+        # check if there is a memory column associated with this s param, and if so, pass axes to plot fn again
+        for sparam in sparams:
+            mem_column =  f"{sparam}_mem"
+            for col in fixed_df.columns:
+                if mem_column in col:
+                    magn_and_phase_mem = fixed_df.filter(like=mem_column)
+                    magn_dB_mem, phase_rad_mem =  magn_and_phase_mem.iloc[:,0].values.astype(float), magn_and_phase_mem.iloc[:,1].values.astype(float)
+                    axes = plot_data_with_pandas(freqs, magn_dB=magn_dB_mem, phase_rad=phase_rad_mem,  \
+                                                 plot_complex=plot_complex, zero_lines=zero_lines, axes=axes,  \
+                                                 plot_dict={"magn_color":"orange", "phase_color":"orange", 
+                                                            "magn_label":"Memory", "plot_title":"VNA Data & Memory",
+                                                            "alpha":0.5, "linestyle":"--", "marker":None})
+                    
+        
         
         fig = axes[0].get_figure()
         
-        if plot_title is not None:
-            fig.suptitle(plot_title, fontsize=18)
+        if title is not None:
+            fig.suptitle(plot_title, fontsize=18, x=0.25)
         else:
-            fig.suptitle(f"{sparam} - {title}", fontsize=18)
+            fig.suptitle(f"{sparam} - {title}", fontsize=18, x=0.25)
             
             
         fig.tight_layout()
@@ -163,30 +229,20 @@ def plot_s2p_df(df, axes=None, plot_complex=True, track_min=True, title="", do_e
     return all_axes
         
 # TODO: add functionality for taking dataframes instead of individual np arrays
-def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, phase_rad=None, plot_dict=None, plot_complex=None, zero_lines=True):
+def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, phase_rad=None, plot_dict={}, plot_complex=None, zero_lines=True):
 
-    
-    
     # lazy way to pass custom args for separate plots
-    if plot_dict is None:
-        plot_complex=True if plot_complex is None else plot_complex
-        do_edelay_fit=False
-        track_min=False
-        suptitle=None
-        magn_color = "r"   
-        phase_color = "b"  
-        magn_label = None
-        phase_label = None
-        
-    else:
-        plot_complex=plot_dict["plot_complex"] 
-        do_edelay_fit=plot_dict["do_edelay_fit"] 
-        track_min=plot_dict["track_min"] 
-        suptitle=plot_dict["suptitle"] 
-        magn_color = plot_dict["magn_color"]    
-        phase_color = plot_dict["phase_color"]    
-        magn_label = plot_dict["magn_label"]    
-        phase_label = plot_dict["phase_label"]    
+    plot_complex=True if plot_complex is None else plot_complex
+    do_edelay_fit=False
+    track_min=False
+    marker = plot_dict["marker"] if "marker" in plot_dict else "."    
+    linestyle = plot_dict["linestyle"] if "linestyle" in plot_dict else None    
+    plot_title = plot_dict["plot_title"] if "plot_title" in plot_dict else "VNA Data"    
+    magn_color = plot_dict["magn_color"] if "magn_color" in plot_dict else "r"   
+    phase_color = plot_dict["phase_color"] if "phase_color" in plot_dict else "b"  
+    magn_label = plot_dict["magn_label"] if "magn_label" in plot_dict else None   
+    phase_label = plot_dict["phase_label"] if "phase_label" in plot_dict else None  
+    alpha = plot_dict["alpha"] if "alpha" in plot_dict else 1.0
     
         
     if phase_rad is None and phase_deg is not None:
@@ -207,21 +263,21 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
     magn_lin = 10**(magn_dB/20)
     cmpl = magn_lin * np.exp(1j * phase_rad)
     
-    if do_edelay_fit is True:
-        try:
-            slope, intercept, _, _, _ = sp.stats.linregress(freqs, phase_rad - np.mean(phase_rad))  # force intercept = 0 by subtracting x_0
-            edelay_correction = np.exp(1j * np.abs(slope) * freqs * 2*np.pi)
-            plt.figure()
-            plt.plot(freqs, phase_rad)
-            plt.plot(freqs, slope*freqs+intercept)
-            cmpl = cmpl * edelay_correction
-            plt.plot(freqs, phase_rad)
-            plt.show()
-            print(f"{intercept=}")
-            print(f"{slope*1e9=:1.3f}\n{slope=:1.3f}\n{slope*freqs[0]=:1.3f}\n{slope*freqs[-1]=:1.3f}")
-        except Exception as e:
-            print("Failed to do edelay correction, going back to regular phase_rad")
-            print(e)
+    # if do_edelay_fit is True:
+    #     try:
+    #         slope, intercept, _, _, _ = sp.stats.linregress(freqs, phase_rad - np.mean(phase_rad))  # force intercept = 0 by subtracting x_0
+    #         edelay_correction = np.exp(1j * np.abs(slope) * freqs * 2*np.pi)
+    #         plt.figure()
+    #         plt.plot(freqs, phase_rad)
+    #         plt.plot(freqs, slope*freqs+intercept)
+    #         cmpl = cmpl * edelay_correction
+    #         plt.plot(freqs, phase_rad)
+    #         plt.show()
+    #         print(f"{intercept=}")
+    #         print(f"{slope*1e9=:1.3f}\n{slope=:1.3f}\n{slope*freqs[0]=:1.3f}\n{slope*freqs[-1]=:1.3f}")
+    #     except Exception as e:
+    #         print("Failed to do edelay correction, going back to regular phase_rad")
+    #         print(e)
             
     # update values
     real, imag = np.real(cmpl), np.imag(cmpl)
@@ -233,7 +289,7 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
     
     if axes is None:
         mosaic = "AACC\nBBCC"
-        fig, axes = plt.subplot_mosaic(mosaic, figsize=(20,8))
+        fig, axes = plt.subplot_mosaic(mosaic, figsize=(20,12))
         ax1, ax2, ax3 = axes["A"], axes["B"], axes["C"]
         axes = [ax1, ax2, ax3]
     else:
@@ -258,7 +314,7 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
     
     freq_argmin = magn_lin.argmin()
     freq_min = freqs[freq_argmin]
-
+    
     if track_min is True:
         new_freqs = (freqs - freq_min)/1e3
         freq_min_label = f"$f_{"{min}"}$ = {freq_min/1e6:1.3f} MHz"
@@ -272,18 +328,19 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
         ax1.set_title(f"Freq vs Magn [$f_{"{min}"}$ = {freq_min/1e9:1.6f} GHz]")
         ax2.set_title(f"Freq vs Phase [$f_{"{min}"}$ = {freq_min/1e9:1.6f} GHz]")
     else:
-        new_freqs = freqs/1e9
+        new_freqs = freqs
         ax1.set_xlabel("Frequency [GHz]")
         ax2.set_xlabel("Frequency [GHz]")
         ax1.set_title(f"Frequency vs Magnitude")
         ax2.set_title(f"Frequency vs Phase")
     
     # magn and phase
-    ax1.plot(new_freqs, magn_dB, ".", color=magn_color, markersize=3, label=magn_label)
-    ax2.plot(new_freqs, phase_rad, ".", color=phase_color, markersize=3, label=phase_label)
+    ax1.plot(new_freqs, magn_dB, marker=marker, linestyle=linestyle, color=magn_color, markersize=4, label=magn_label, alpha=alpha)
+    ax2.plot(new_freqs, phase_rad, marker=marker,  linestyle=linestyle, color=phase_color, markersize=4, label=phase_label, alpha=alpha)
 
     ax1.set_ylabel("S21 [dB]")
     ax2.set_ylabel("Phase [Rad]")
+    fig.suptitle(plot_title, fontsize=18, x=0.25)
     
     if plot_complex is False:
         if ax3 is not None:
@@ -291,17 +348,14 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
             x_title, y_title = 0.27, 0.98
         else:
             x_title, y_title = 0.5, 0.98
-            
+        
         axes = [ax1, ax2]
         
+    if "magn_label" in plot_dict or "phase_label" in plot_dict:
+        ax1.legend()
         
-    if suptitle is not None:
-        fig.suptitle(suptitle, fontsize=18, x=x_title, y=y_title)
-        
-    
-    if plot_dict is not None and plot_dict["do_legend"] is True:
-            ax1.legend()
-        
+    ax1.grid()
+    ax2.grid()
     fig.tight_layout()
     
     return axes

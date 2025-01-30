@@ -31,7 +31,7 @@ from pathlib import Path
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 
 import bcqt_hub.experiments.quick_helpers as qh
-from bcqt_hub.src.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 
 

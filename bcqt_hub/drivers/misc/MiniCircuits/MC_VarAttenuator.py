@@ -30,12 +30,9 @@ class MC_VarAttenuator():
         self.device_address = device_address
         self.timeout = timeout
         
-        
-        if self.debug is True:
-            print(self.Get_Model_Name())
-            print(self.Get_Serial_No())
-            
-        print(self.Get_Attenuation())
+        print(f"[INIT] {self.Get_Model_Name() = }")
+        print(f"[INIT] {self.Get_Serial_No() = }")
+        print(f"[INIT] {self.Get_Attenuation() = }")
     
     
     def Format_PTE_Return(self, PTE_Return):
@@ -51,9 +48,8 @@ class MC_VarAttenuator():
         except:
             var, result = self.device_name, PTE_Return
             
-        
-        if self.debug is True:
-            print(var, result)
+        # if self.debug is True:
+        #     print(f"[DEBUG] - Format_PTE_Return = {var}, {result}")
             
         return var, result
     
@@ -74,9 +70,9 @@ class MC_VarAttenuator():
 
         # Catch an exception if URL is incorrect (incorrect IP or disconnected)
         except Exception as e:
-            print ("Error, no response from device; check IP address, command, and connections.")
+            print ("[DEBUG] Error, no response from device; check IP address, command, and connections.")
             PTE_Return = "No Response!"
-            print((f"{CmdToSend = }"))
+            print((f"[DEBUG] {CmdToSend = }"))
             raise e
 
         var, result = self.Format_PTE_Return(PTE_Return)
@@ -102,12 +98,12 @@ class MC_VarAttenuator():
         cmd = f"SETATT={attenuation:1.3f}"
         
         if self.debug is True:
-            print(f"Sending {cmd = }")
+            print(f"[DEBUG] Sending {cmd = }")
         
         var, result = self.Get_HTTP_Result(cmd)   # Send command
         
         if self.debug is True:  # Print attenuator
-            print(f"Set attenuation on {self.device_address} to\n    {self.Get_Attenuation()} dB")       
+            print(f"[DEBUG] Set attenuation on {self.device_address} to {self.Get_Attenuation()[1]} dB\n  ---> {self.Get_Attenuation() = }")       
                 
         if result == '1':
             result = f"Success: Atten={self.Get_Attenuation()[1]}"

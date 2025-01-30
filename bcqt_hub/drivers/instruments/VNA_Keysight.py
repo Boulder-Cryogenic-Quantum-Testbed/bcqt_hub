@@ -2,8 +2,13 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import time
+import sys
 
-from ..BaseDriver import BaseDriver
+if __name__ == "__main__":
+    sys.path.append("..")
+    from BaseDriver import BaseDriver
+else:
+    from ..BaseDriver import BaseDriver
 
 
 
@@ -162,7 +167,14 @@ class VNA_Keysight(BaseDriver):
             if name in self.configs:
                 self.configs["n_points"] = self.configs[name]
                 del self.configs[name]
+                
+        # small units
         
+        if "edelay" in self.configs.keys() and self.configs["edelay"] < 200e-9:
+            self.configs["edelay"] *= 1e9  # change seconds to nanoseconds
+        elif "edelay" not in self.configs.keys():
+            self.configs["edelay"] = 0
+            
         # check all kwargs if their equivalent without underscores exists
         #   e.g. check if 'fstart' exists, then replace it with 'f_start'
         entries_to_remove = []
@@ -194,6 +206,42 @@ class VNA_Keysight(BaseDriver):
         """
     
         return Exception("Not implemented, needs to call all 'get_xyz_param' methods")
+        
+    def get_segments(self):
+        """
+            uses SCPI and query_check to ask the VNA what the homophasal segments
+             are... haven't figured out how to tell if they're even being used..!
+        """
+        
+        labels = ["flag_enabled", "num_pts", "start_freq", "stop_freq", "IF_Bandwidth", "Dwell Time", "Power"]
+
+        segment_list = self.query_check("SENSe1:SEGMent:LIST? SSTOP").replace("\\n","")
+
+        segment_list = [float(x) for x in segment_list.split(',')]
+
+        num_labels = len(labels)
+        num_segms = len(segment_list)//num_labels
+        
+        final_segm_list = []
+        for idx in range(num_segms):
+            
+            left_lim, right_lim = idx*num_labels+idx, (idx+1)*num_labels+idx
+            one_segm = segment_list[left_lim:right_lim]
+            segm_labeled = {label : float(val) for label,val in zip(labels, one_segm)}
+            
+            display(f"Reading segment {idx} - indices {left_lim}:{right_lim}")
+            final_segm_list.append(segm_labeled)
+            
+        return final_segm_list
+        
+        
+    def get_freq_array(self):
+        
+        freq_start = float(self.query_check("SENSE:FREQ:START?"))
+        freq_stop = float(self.query_check("SENSE:FREQ:STOP?"))
+        num_points = int(self.query_check("SENS:SWE:POINTS?"))
+        
+        return np.linspace(freq_start, freq_stop, num_points)
         
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ~~~  Instr Methods
@@ -255,7 +303,9 @@ class VNA_Keysight(BaseDriver):
                     for ff1, ff2 in zip(freq[0::2], freq[1::2])][1:-1]
         
         elif segment_type == 'hybrid':
-            assert self.configs["Noffres"] is not None
+            if "Noffres" not in self.configs or self.configs["Noffres"] is None:
+                self.print_warning("'Noffres' missing from configs! Setting to 5 by default.. ")
+                self.configs["Noffres"] = 5
             
             # split between homophasal and linear
             #   homophasal near resonance   freqs = [fa->fb]
@@ -432,10 +482,11 @@ class VNA_Keysight(BaseDriver):
         self.write_check(f'SENSe1:AVERage:Count {self.configs["averages"] // 1}')
 
     
-    def run_measurement(self):
+    def run_measurement(self, verbose=True):
         """
             Run the measurement and continuously query until it reports finished
         """
+        
         dstr = datetime.today().strftime("%m/%d/%Y @ %I:%M%p")
         
         self.write_check('*CLS')
@@ -460,27 +511,37 @@ class VNA_Keysight(BaseDriver):
         check = False
         tstart = time.time()   
         
-        print()
-        self.print_console(f"Beginning measurement at {dstr}")
-        while check is False:
-            time.sleep(0.5)
-            t_elapsed = time.time() - tstart
+        # quiet measurement
+        if verbose is False:
+            while check is False:
+                time.sleep(0.1)
+                check_str = self.strip_specials(self.query_check('STAT:OPER:AVER1:COND?'))[0]
+                if check_str != "0":
+                    check = bool(check_str)
             
-            # check_str is a string, "0" = busy or "1" = complete
-            check_str = self.strip_specials(self.query_check('STAT:OPER:AVER1:COND?'))[0]
-            print(f"      Time elapsed: [{t_elapsed:1.1f}s]", end="\r")
-            
-            # once it is "1", print that we're finished
-            if check_str != "0":
-                dstr_end = datetime.today().strftime("%m/%d/%Y @ %I:%M%p")
-                print(f"\n[{dstr_end}] Trace finished. Uploading now.")
-                print(f"\n   Total time elapsed: {t_elapsed:1.2f} seconds")
-                if t_elapsed >= 600:
-                    print(f"                     = {t_elapsed/60:1.1f} minutes \n")
+        else:   # verbose updates time
+            self.print_console()
+            self.print_console(f"Beginning measurement at {dstr}")
+            while check is False:
+                time.sleep(0.5)
+                t_elapsed = time.time() - tstart
                 
-                # update the variable and let the while finish
-                check = bool(check_str)
-            
+                # check_str is a string, "0" = busy or "1" = complete
+                check_str = self.strip_specials(self.query_check('STAT:OPER:AVER1:COND?'))[0]
+                self.print_console(" "*20 + f"Time elapsed: [{t_elapsed:1.2f}s]", end="\r")
+                
+                # once it is "1", print that we're finished
+                if check_str != "0":
+                    t_elapsed = time.time() - tstart
+                    dstr_end = datetime.today().strftime("%m/%d/%Y @ %I:%M%p")
+                    self.print_console(f"\n[{dstr_end}] Trace finished. Uploading now.")
+                    self.print_console(f" "*20 + f"Total time elapsed: {t_elapsed:1.3f} seconds")
+                    if t_elapsed >= 600:
+                        print(f"                     = {t_elapsed/60:1.1f} minutes \n")
+                    
+                    # update the variable and let the while finish
+                    check = bool(check_str)
+                    
         # self.write_check('OUTPut:STATe OFF')
         # self.write_check('INITiate:CONTinuous OFF')
 
@@ -508,7 +569,7 @@ class VNA_Keysight(BaseDriver):
         
         return freqs, magn, phase
     
-    def return_data_s2p(self, archive_complex=False):
+    def return_data_s2p(self, get_memory=False, archive_complex=False):
         
         """
             Transfer data from VNA to PC, organized into a dict
@@ -551,6 +612,14 @@ class VNA_Keysight(BaseDriver):
             # possible to use CALC:DATA:MFD? "1,2,3,4" which returns traces 1->4
 
             data_dict[sparam] = [freqs, magn_dB, phase_rad]
+            
+            if get_memory is True:
+                self.write_check('CALC1:FORMat UPHASe') # read in the unwrapped phase
+                phase_memory = self.query_check_ascii('CALC1:DATA? FMEM', container=np.array)
+                self.write_check('CALC1:FORMat MLOG') # read in the magn_dB
+                magn_dB_memory = self.query_check_ascii('CALC1:DATA? FMEM', container=np.array)
+                phase_rad = np.deg2rad(phase)
+                data_dict[f"{sparam}_mem"] = [freqs, magn_dB_memory, phase_memory]
         
         ############################################################
         ### used to be its own function, 'make_dfs', but decided to 
@@ -585,19 +654,17 @@ class VNA_Keysight(BaseDriver):
             df.apply(lambda x: np.real(x))
             all_dfs.append(df)
             
-        # every day I grow resentful of pandas for making my life harder for no reason
-        # merge, join, concat, pd.DataFrame... and in the end I had to google this crap
-        # just to have the first column be 'frequency' and the rest the data........ >:(
         combined_df = pd.concat(all_dfs, axis=1)
         combined_df = combined_df.loc[:,~combined_df.columns.duplicated()].copy()
-    
-        # add datetime to first row for archiving purposes
-        # first_row = {col : val for col, val in zip(combined_df.columns, [datetime.now()]*len(combined_df.columns))}
-        # datetime_row = pd.DataFrame(first_row, index=["datetime.now()"])
-        # final_df = pd.concat([datetime_row, combined_df.iloc[:]])
-        
         
         return combined_df
+    
+    
+    def return_memory_and_data(self):
+        
+        data_memory = self.query_check_ascii('CALC1:DATA? FMEM', container=np.array)
+        
+        return data
     
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ~~~  Instr Scripts

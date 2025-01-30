@@ -333,7 +333,7 @@ class BaseDriver():
         else:
             new_msg = f"[{self.instrument_name}]  {prefix} {msg.replace("\n","")}".strip()
         
-        if msg[:1] == "\n":
+        if msg[:-1] == "\n":
             self.print_console()  # print an empty line with prefix
             print(new_msg, **kwargs)
         else:   
@@ -343,7 +343,7 @@ class BaseDriver():
         if self.debug is True:
             self.print_console(msg, prefix=" **[DEBUG]**  ", **kwargs)
         
-    def print_warning(self, msg, cmd, err, **kwargs):
+    def print_warning(self, msg, **kwargs):
         self.print_console(msg, prefix=" ****[WARNING]****  ", **kwargs)
         
     def print_error(self, msg, cmd, err):

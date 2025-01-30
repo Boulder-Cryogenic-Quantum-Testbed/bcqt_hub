@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 import time, sys
 
-dstr = datetime.today().strftime("%m_%d_%I%M%p")
+dstr = datetime.today().strftime("%m_%d_%H%M")
 current_dir = Path(".")
 script_filename = Path(__file__).stem
 
@@ -43,9 +43,9 @@ for path in all_paths:
 
 sys.path.append(r"C:\\Users\\Lehnert Lab\\GitHub")
 import bcqt_hub
-# import bcqt_hub.src.drivers
+# import bcqt_hub.bcqt_hub.drivers
 
-from bcqt_hub.src.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 all_f_centers = [5.863254e9]
 VNA_Keysight_InstrConfig = {
@@ -78,7 +78,7 @@ PNA_X.update_configs(**VNA_Keysight_InstrConfig)
 PNA_X.setup_s2p_measurement()
 display(PNA_X.configs)
 
-from bcqt_hub.src.modules.DataAnalysis import DataAnalysis
+from bcqt_hub.bcqt_hub.modules.DataAnalysis import DataAnalysis
 import bcqt_hub.experiments.quick_helpers as qh
 
 # %%

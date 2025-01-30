@@ -37,7 +37,7 @@ msmt_num = int(re.search(r"Msmt\d{1,6}", filename).captures()[0].replace("Msmt",
 
 
 # %% read all csvs and parse info from filename and csv contents
-from bcqt_hub.src.modules.DataHandler import DataSet, DataHandler
+from bcqt_hub.bcqt_hub.modules.DataHandler import DataSet, DataHandler
 import bcqt_hub.experiments.quick_helpers as qh
 
 parsed_dataset_path.mkdir(exist_ok=True)
@@ -65,7 +65,7 @@ for csv_filepath in all_datasets:
         "set_num" : int(set_str[-1]),
         "msmt_num" : msmt_num,
         "avgs" : int(avgs),
-        # "dstr" : datetime.fromisoformat(df.iloc[0,0]).strftime("%m_%d_%I%M%p"),
+        # "dstr" : datetime.fromisoformat(df.iloc[0,0]).strftime("%m_%d_%H%M"),
         # "timestamp" : datetime.fromisoformat(df.iloc[0,0]),
     }
     
@@ -88,7 +88,7 @@ make_plots = False
 
     
 # %% run analysis with scresonators
-from bcqt_hub.src.modules.DataAnalysis import DataAnalysis
+from bcqt_hub.bcqt_hub.modules.DataAnalysis import DataAnalysis
     
 # window_size = len(all_dsets)//1000
 window_size = 15*2

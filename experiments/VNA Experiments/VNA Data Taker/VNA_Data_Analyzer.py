@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 from datetime import datetime
 
-dstr = datetime.today().strftime("%m_%d_%I%M%p")
+dstr = datetime.today().strftime("%m_%d_%H%M")
 current_dir = Path(".")
 script_filename = Path(__file__).stem
 

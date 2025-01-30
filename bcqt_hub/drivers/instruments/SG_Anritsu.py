@@ -1,5 +1,8 @@
 from pathlib import Path
 
+# import sys
+# sys.path.append("..")
+
 from ..BaseDriver import BaseDriver
 
 
@@ -69,7 +72,7 @@ class SG_Anritsu(BaseDriver):
         
         self.write_check(f"OUTP:STAT {int(setting)}")
         
-        
+    
     # ~~~~~~~~~
 
     def get_power(self):
@@ -77,29 +80,29 @@ class SG_Anritsu(BaseDriver):
         
     def set_power(self, power_dBm : float, override_safety=False):
         
-        if override_safety is True and power_dBm > 20:
-            self.print_console(f" <WTF?!> You have overridden the safety, AND you have sent a power greater than 20 dBm.")
-            self.print_console(f"                      I've set this as a hardcoded limit, so you'll need to go to this script:")
-            self.print_console(f"    {Path(".").absolute()} ")
-            self.print_console(f"                      to change this. \n\n    Why is this the case? Well, there's a good chance the Anritsu isn't ")
-            self.print_console(f"                      connected to enough attenuation, and this will significantly heat the fridge.")
+        # if override_safety is True and power_dBm >= 20:
+        #     self.print_console(f" <WTF?!> You have overridden the safety, AND you have sent a power greater than 20 dBm.")
+        #     self.print_console(f"         I've set this as a hardcoded limit, so you'll need to go to this script:")
+        #     self.print_console(f"         {Path(".").absolute()} ")
+        #     self.print_console(f"         to change this. \n\n    Why is this the case? Well, there's a good chance the Anritsu isn't ")
+        #     self.print_console(f"         connected to enough attenuation, and this will significantly heat the fridge.")
             
-            # comment this line out to disable the safety
-            raise PermissionError
+        #     # comment this line out to disable the safety
+        #     raise PermissionError
             
-        elif override_safety is True and power_dBm > 0:
+        if override_safety is True and power_dBm >= 0:
             self.print_console(f"\n\n")
             self.print_console(f" <WARNING> You are sending more than 0 dBm, triggering the code's safety.") 
-            self.print_console(f"                        Since you have set override_safety=True, the setting has gone through") 
-            self.print_console(f"                        Make sure that you did not drop a minus sign.")
+            self.print_console(f"           Since you have set override_safety=True, the setting has gone through") 
+            self.print_console(f"           Make sure that you did not drop a minus sign.")
             self.print_console(f"\n\n")
         
         elif power_dBm > 0:
             self.print_console(f"\n\n")
             self.print_console(f" <SAFETY> You are sending more than 0 dBm, triggering the code's safety.") 
-            self.print_console(f"                        The command has been aborted. Check that you did not drop a minus sign. ")
+            self.print_console(f"          The command has been aborted. Check that you did not drop a minus sign. ")
             self.print_console(f"\n\n")
-            raise ValueError
+            raise ValueError("Read console message - use 'override_safety' argument to override this error")
             
         # power is < 0 unless override_safety == True
         # send power change cmd 
@@ -112,7 +115,7 @@ class SG_Anritsu(BaseDriver):
     # ~~~~~~~~~
         
     def get_freq(self):
-        return self.query_check(f'SOUR:FREQ:CW?', fmt=int) 
+        return self.query_check(f'SOUR:FREQ:CW?') 
     
     def set_freq(self, frequency : float, suppress_warnings=False):
         if self.suppress_warnings is False:
@@ -135,9 +138,10 @@ class SG_Anritsu(BaseDriver):
         # send frequency change cmd
         self.write_check(f'SOUR:FREQ:CW {frequency} HZ') 
         
-        frequency_status = self.get_freq()
+        f_status = self.get_freq()
+        frequency_result = ''.join(f_status.splitlines())  # remove line endings
         if self.debug: 
-            self.print_console(f"Frequency set to {frequency_status} ** Hz **")
+            self.print_console(f"Frequency set to {float(frequency_result)/1e6} MHz")
             
     
             

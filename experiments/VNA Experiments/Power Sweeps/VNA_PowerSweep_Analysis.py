@@ -13,14 +13,14 @@ current_dir = Path(".")
 script_filename = Path(__file__).stem.replace("Analysis","")  # match measurement script
 
 # lazy way to import modules - just append to path... TODO: fix :)
-src_path = Path(r"..\..\src")
-driver_path = src_path / "drivers"
+bcqt_hub_path = Path(r"..\..\bcqt_hub")
+driver_path = bcqt_hub_path / "drivers"
 data_dir = current_dir / "data"
 
 assert data_dir.exists()
 
 # make sure all paths exist, then append to $PATH
-for path in [src_path, driver_path]:
+for path in [bcqt_hub_path, driver_path]:
     path = path.absolute()
     assert path.exists()
     sys.path.append(str(path))

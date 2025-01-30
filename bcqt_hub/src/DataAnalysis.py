@@ -51,7 +51,7 @@ class DataAnalysis():
         if dstr is not None:
             self.dstr = dstr
         else:
-            self.dstr = datetime.today().strftime("%m_%d_%I%M%p")
+            self.dstr = datetime.today().strftime("%m_%d_%H%M")
         
     def display_results(self):
         print(f"Displaying results: {self.processed_data}")

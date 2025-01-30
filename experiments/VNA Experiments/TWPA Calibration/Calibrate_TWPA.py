@@ -32,7 +32,7 @@ from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 
-dstr = datetime.today().strftime("%m_%d_%I%M%p")
+dstr = datetime.today().strftime("%m_%d_%H%M")
 current_dir = Path(".")
 script_filename = Path(__file__).stem
 
@@ -56,43 +56,51 @@ VNA_Keysight_DefaultConfig = {
     "rm_backend" : None,
     "instr_address" : 'TCPIP0::192.168.0.105::inst0::INSTR',
     "edelay" : 71e-9,
-    "sparam" : ['S11', 'S21'],  
+    "sparam" : ['S21'],  
     
-    # "segment_type" : "linear",
-    "segment_type" : "hybrid",
+    "segment_type" : "linear",
+    # "segment_type" : "hybrid",
 }
 
-SG_Generator_DefaultConfig = {
-    "instrument_name" : "SG_MG3692C",
+SG_TWPA_DefaultConfig = {
+    "instrument_name" : "SG_MG3692C_TOP",
     "rm_backend" : None,
     "instr_address" : 'GPIB::8::INSTR',  
+}
+
+SG_TestTone_DefaultConfig = {
+    "instrument_name" : "SG_MG3691A_TestTone",
+    "rm_backend" : None,
+    "instr_address" : 'GPIB::7::INSTR',  
 }
 
 
 # %% initiate instrument drivers
 """ see 'VNA_Experiments/TakeMeasurements.py' or 'Simple_VNA_Sweep' for example usage """
 
-from bcqt_hub.src.drivers.instruments.VNA_Keysight import VNA_Keysight
-from bcqt_hub.src.drivers.instruments.SG_Anritsu import SG_Anritsu
+from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqt_hub.bcqt_hub.drivers.instruments.SG_Anritsu import SG_Anritsu
 
 PNA_X = VNA_Keysight(VNA_Keysight_DefaultConfig, debug=True)  
-SG_MG3692C = SG_Anritsu(SG_Generator_DefaultConfig, debug=True)
+SG_MG3692C_TWPA = SG_Anritsu(SG_TWPA_DefaultConfig, debug=True)
+# SG_MG3691A_TestTone = SG_Anritsu(SG_TestTone_DefaultConfig, debug=True)
+
 
 # %% set experimental configs
 
 VNA_Settings = {
-    "f_start" : 6e9,
-    "f_stop" : 8e9,
-    "n_points" : 10001,
-    "if_bandwidth" : 5000,
-    "power" : -30,
+    "f_start" : 5.5e9,
+    "f_stop" : 7.25e9,
+    "n_points" : 5001,
+    "if_bandwidth" : 10000,
+    "power" : -40,
     "averages" : 2,
     "sparam" : ['S21'],  
 }
 
 Sweep_Config = {
-    "num_powers" : 3,
-    "num_freqs" : 3,
+    "num_powers" : 10,
+    "num_freqs" : 10,
     "freq_sweep_start" : 7.908e9,
     "freq_sweep_stop" : 7.910e9,
     "power_sweep_start" : -15,
@@ -113,10 +121,10 @@ PNA_X.update_configs(**VNA_Settings)
 display(PNA_X.get_instr_params())  # show configs in the lab instrument
 display(PNA_X.configs)    # show current configs in the code, NOT in the physical lab instrument
 
-# SG_MG3692C.return_instrument_parameters()
+# SG_MG3692C_TWPA.return_instrument_parameters()
 
 PNA_X.check_instr_error_queue()
-SG_MG3692C.check_instr_error_queue()
+SG_MG3692C_TWPA.check_instr_error_queue()
 
 
 # %% run experiment!
@@ -131,13 +139,13 @@ for pump_freq in freq_sweep:
     for pump_power in power_sweep:
         
         """ configure signal generator """
-        SG_MG3692C.set_freq(pump_freq)
-        SG_MG3692C.set_power(pump_power)
+        SG_MG3692C_TWPA.set_freq(pump_freq)
+        SG_MG3692C_TWPA.set_power(pump_power)
         
         time.sleep(1)
         
         """ begin VNA measurement w/ TWPA pump on"""
-        SG_MG3692C.set_output(True)
+        SG_MG3692C_TWPA.set_output(True)
         
         # Take data and archive
         PNA_X.setup_s2p_measurement()
@@ -147,7 +155,7 @@ for pump_freq in freq_sweep:
         time.sleep(1)
         
         """ repeat VNA measurement w/ TWPA pump off"""
-        SG_MG3692C.set_output(False)
+        SG_MG3692C_TWPA.set_output(False)
         
         # Take data and archive
         PNA_X.setup_s2p_measurement()
@@ -161,10 +169,10 @@ for pump_freq in freq_sweep:
             
             
         ### save data
-        save_dir = r"./data/cooldown59/Line6_SEG_PdAu_02"
-        expt_category = rf"Line6_SEG_PdAu_02_{dstr}_TWPA_Calibration"
-        meas_name_on = f"TWPA_Calibration_{pump_freq/1e6:1.0f}MHz_{pump_power}dBm_ON"
-        meas_name_off = f"TWPA_Calibration_{pump_freq/1e6:1.0f}MHz_{pump_power}dBm_OFF"
+        save_dir = r"./data/cooldown59/Line1_RG_Nb_Ta_Qb01"
+        expt_category = rf"Line1_RG_Nb_Ta_Qb01_{dstr}_TWPA_Calibration"
+        meas_name_on = f"TWPA_Calibration_{pump_freq/1e3:1.0f}KHz_{pump_power}dBm_ON"
+        meas_name_off = f"TWPA_Calibration_{pump_freq/1e3:1.0f}KHz_{pump_power}dBm_OFF"
 
         qh.archive_data(PNA_X, df_TWPA_on, meas_name=meas_name_on, save_dir=save_dir, expt_category=expt_category)
         qh.archive_data(PNA_X, df_TWPA_off, meas_name=meas_name_off, save_dir=save_dir, expt_category=expt_category)
@@ -189,9 +197,9 @@ for (key_on, df_on), (key_off, df_off) in zip(data_TWPA_on.items(), data_TWPA_of
     
     # break
     
-SG_MG3692C.set_output(True)
-SG_MG3692C.set_freq(7.909e9)
-SG_MG3692C.set_power(-17)
+SG_MG3692C_TWPA.set_output(True)
+SG_MG3692C_TWPA.set_freq(7.909e9)
+SG_MG3692C_TWPA.set_power(-17)
 
 
 # %%

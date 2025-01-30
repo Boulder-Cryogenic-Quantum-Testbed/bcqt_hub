@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 import time, sys
 
-driver_path = str(Path(r"..\..\..\src\drivers").absolute())
+driver_path = str(Path(r"..\..\..\bcqt_hub\drivers").absolute())
 sys.path.append(driver_path)  # lazy way to import drivers while in a subdir 
 
 from VNA_Keysight import VNA_Keysight
