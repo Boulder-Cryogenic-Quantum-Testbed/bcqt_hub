@@ -17,31 +17,36 @@ class DataSet():
        
     """
     
-    def __init__(self, data, expt_name:str, meas_label:str, units:str, **kwargs):
+    # def __init__(self, data, expt_name:str, meas_label:str, units:str, **kwargs):
         
-        self.data = pd.DataFrame()
+    #     self.data = pd.DataFrame()
         
-        """ check type of arg 'data', then use appropriate method """
-        if isinstance(data, pd.DataFrame):
-            self.append_df(data)
-        elif isinstance(data, np.ndarray) or isinstance(data, list):
-            self.append_array(data, meas_label)
-        else:
-            self.append_dict(data)
+    #     """ check type of arg 'data', then use appropriate method """
+    #     if isinstance(data, pd.DataFrame):
+    #         self.append_df(data)
+    #     elif isinstance(data, np.ndarray) or isinstance(data, list):
+    #         self.append_array(data, meas_label)
+    #     else:
+    #         self.append_dict(data)
         
         
-        self.expt_name = expt_name
-        self.meas_label = meas_label
+    #     self.expt_name = expt_name
+    #     self.meas_label = meas_label
         
-        self.metadata = {
-            "expt_name" : expt_name,
-            "label" : meas_label,
-            "units" : units,
-            "creation_time" : datetime.now(),
-        }
+    #     self.metadata = {
+    #         "expt_name" : expt_name,
+    #         "label" : meas_label,
+    #         "units" : units,
+    #         "creation_time" : datetime.now(),
+    #     }
         
-        if "configs" in kwargs:
-            self.add_configs(kwargs["configs"])
+    #     if "configs" in kwargs:
+    #         self.add_configs(kwargs["configs"])
+    def __init__(self, csv_path):
+        """
+
+        """
+        self.data = self.load_csv(csv_path)
         
     
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
@@ -62,8 +67,13 @@ class DataSet():
     def append_array(self, data, label):
         """ if an array is given, require a label and append to dataframe  """
         self.append_dict( {label : data} )
+
+    def load_csv(self, csv_path_string):
+        return pd.read_csv(csv_path_string, index_col=0)
             
-            
+    def get_data(self):
+        print(self.data)
+    
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
     
     
@@ -124,10 +134,8 @@ class DataHandler(dict):
     """
     
     def __init__(self, *args, **kwargs):
-      self.__dict__ = self
-      super().__init__(*args, **kwargs)
-      
-
+        super().__init__(*args, **kwargs)
+        self.list_of_datasets = []
 
     def load_dataset(self, dset):
         
@@ -138,5 +146,56 @@ class DataHandler(dict):
         
         expt_name = dset
 
-    # def 
+    # def load_csv(self, csv_path_string):
+    #     self.csv = pd.read_csv(csv_path_string, index_col=0)
+    def load_data_directory(self, path):
+        """
+            
+        """
+        data_dir_files = list(path.glob("*"))
+
+        # print(data_dir)
+        for file in data_dir_files:
+            dset = self.create_dataset(file)
+            self.list_of_datasets.append(dset)
+    
+    def create_dataset(self, csv_path_string):
+        dset = DataSet(csv_path_string)
+        return dset.get_data()        
+    
+    def display_datasets(self):
+        print(self.list_of_datasets)
+
+
+# %%
+from pathlib import Path
+import sys
+
+current_dir = Path(".")
+parent_dir = Path("..")
+grandparent_dir = Path("../..")
+github_dir = Path("C:/Users/jelly/bcqt_hub")
+
+script_filename = Path(__file__).stem
+
+# import bcqt_hub.experiments.quick_helpers as qh
+sys.path.append(github_dir)
+
+data_dir = grandparent_dir / "experiments" / "TWPA Calibration" /r"data"/ "cooldown59"
+
+print(data_dir)
+
+# use glob to grab all files
+all_measurements = list(data_dir.glob("Line1*/*TWPA*"))
+print(all_measurements)
+
+# for measurement in all_measurements:
+
+meas_idx = 1
+measurement = all_measurements[meas_idx]
+
+print(f"Measurement [{meas_idx}/{len(all_measurements)}]:  {measurement.name}")
+all_traces = sorted(list(measurement.glob("*TWPA*")))
+
+packaged_data = []
 # %%
