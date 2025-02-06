@@ -1,7 +1,9 @@
+# %%
 import numpy as np
 import pandas as pd
+import pathlib as Path
 from datetime import datetime
-# %%
+
 
 class DataSet():
     """
@@ -47,6 +49,7 @@ class DataSet():
 
         """
         self.data = self.load_csv(csv_path)
+        self.file_name = csv_path
         
     
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
@@ -72,7 +75,10 @@ class DataSet():
         return pd.read_csv(csv_path_string, index_col=0)
             
     def get_data(self):
-        print(self.data)
+        return self.data
+
+    def get_file_name(self):
+        return str(self.file_name.stem)
     
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
     
@@ -124,48 +130,66 @@ class DataSet():
         return f"DataSet: {len(self) = }"
     
     
-class DataHandler(dict):
-    
     """
         modified dict that has built-in support for:
             - creating DataSet objects to compartmentalize data
             - combining DataSets into one pandas dataframe
             - saving multiple datasets as csv files
     """
+class DataHandler(dict):
+    
+    """
+    - I never want to interface with a DataSet object myself, since its scope is strictly 
+        holding data and potentially manipulating it.
+
+    - The DataHandler object should load all data in a directory, or load a specific 
+        file, with its associated JSON metadata.
+
+    - Then, if I want to look at a measurement result in the past, I just create a 
+        DataHandler object and provide a filepath OR directory path, which 
+        the DataHandler does all the work for me 🙂
+    """
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.list_of_datasets = []
+        self.list_of_datasets = {}
 
-    def load_dataset(self, dset):
-        
-        if isinstance(dset, DataSet) is False:
-            raise TypeError("argument 'dset' is not a DataSet object.")
-        
-        self[expt_name] = DataSet(data, expt_name, units)
-        
-        expt_name = dset
-
-    # def load_csv(self, csv_path_string):
-    #     self.csv = pd.read_csv(csv_path_string, index_col=0)
+    # Load a directory of path objects and create a corresponding dataset object for all of them
     def load_data_directory(self, path):
-        """
-            
-        """
-        data_dir_files = list(path.glob("*"))
+        if path.is_dir() is False:
+            raise TypeError("argument 'path' is not a directory object.")
 
-        # print(data_dir)
+        data_dir_files = list(path.glob("*"))
         for file in data_dir_files:
-            dset = self.create_dataset(file)
-            self.list_of_datasets.append(dset)
+            self.load_dataset(file)
     
-    def create_dataset(self, csv_path_string):
-        dset = DataSet(csv_path_string)
-        return dset.get_data()        
+    # Load a singular dataset from a given path object
+    def load_dataset(self, file_path):
+        if isinstance(file_path, Path.PurePath) is False or isinstance(file_path, Path.Path) is False :
+            raise TypeError("argument 'file_path' is not a Path object.")
+        
+        dset = self.create_dataset(file_path)
+        file_name = str(file_path.stem)
+        self.list_of_datasets[file_name] = dset
+
+    # Create a dataset object from a path object 
+    def create_dataset(self, csv_path):
+        dset = DataSet(csv_path)
+        return dset.get_data()
     
     def display_datasets(self):
-        print(self.list_of_datasets)
+        for key, value in self.list_of_datasets.items():
+            print(key)
+            # Uncomment the print if not using the juypter notebook and comment out the display
+                # print(value.head(2))
+            display(value.head(2))
 
+    def load_metadata(self):
+        
+        pass
+
+
+#%%
 
 # %%
 from pathlib import Path
