@@ -203,7 +203,7 @@ if __name__ == "__main__":
     cur_dir = Path("./")
     test_csv = list(cur_dir.glob("*.csv"))[0]
 
-    innerdict = {"fish":"yellow"}
+    innerdict = {"fish":"yellow", "joker":"persona5"}
     mdict = {"file_name": str(test_csv.stem), "cat":"joe", 5:"big", "innerdict": innerdict}
     # dHandler.store_metadata_into_dataset(test_csv, mdict)
     dHandler.load_dataset(test_csv, mdict)
