@@ -40,6 +40,7 @@ class DataSet():
         
     #     if "configs" in kwargs:
     #         self.add_configs(kwargs["configs"])
+    
     def __init__(self, csv_path, metadata_dict):
         """
 
@@ -117,29 +118,63 @@ class DataSet():
         return f"DataSet: {len(self) = }"
     
     
-    """
-        modified dict that has built-in support for:
-            - creating DataSet objects to compartmentalize data
-            - combining DataSets into one pandas dataframe
-            - saving multiple datasets as csv files
-    """
 class DataHandler(dict):
     
     """
-    - I never want to interface with a DataSet object myself, since its scope is strictly 
-        holding data and potentially manipulating it.
+        modified dict that has built-in support for:
+            - creating individual DataSet objects that compartmentalize data
+            - organize multiple DataSets while bookkeeping metadata 
+            - handle the loading and saving of csv files & json metadata
+            
+            
+        philosophy:
+            - I never want to interface with a DataSet object myself, since its scope is strictly 
+                holding data.
 
-    - The DataHandler object should load all data in a directory, or load a specific 
-        file, with its associated JSON metadata.
+            - The DataHandler object should load all data in a directory, or load a specific 
+                file, with associated JSON metadata.
 
-    - Then, if I want to look at a measurement result in the past, I just create a 
-        DataHandler object and provide a filepath OR directory path, which 
-        the DataHandler does all the work for me 🙂
+            - Then, if I want to look at a previous measurement result, I just 
+                init a DataHandler object and provide a filepath/dirpath. The 
+                the DataHandler does all the work for me 🙂
+                
     """
     
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
         self.list_of_datasets = {}
+
+        # check if path is a directory or a single csv
+        
+        # if directory: create multiple dsets that load all csvs, then load json if it exists
+        
+        # if file: create on dset that loads a single csv
+
+
+        """
+            we need to figure out what the keyword for each dataset should be
+            
+            dH = DataHandler(path)  # decide later whether path goes in init or load_dsets
+            dH.load_dsets()
+            
+            ***
+            
+            for key, dset in dH.items():
+                
+                print(key, dset)
+                
+                
+
+            previous code
+                key is integer, to mimic enumerate()
+                but also keeps keys static when removing
+                an element
+            
+            
+        
+        """
 
     # Load a directory of path objects and create a corresponding dataset object for all of them
     def load_data_directory(self, path:Path, mdict:dict):
@@ -150,6 +185,7 @@ class DataHandler(dict):
         self.create_metadata_for_directory(path, mdict)
         for file in data_dir_files:
             self.load_dataset(file, mdict)
+            
     
     # Load a singular dataset from a given path object
     def load_dataset(self, file_path: Path, metadict:dict):
@@ -159,6 +195,7 @@ class DataHandler(dict):
         dset = self.create_dataset(file_path, metadict)
         file_name = str(file_path.stem)
         self.list_of_datasets[file_name] = dset
+        
 
     # Create a dataset object from a path object 
     def create_dataset(self, csv_path, metadict):
@@ -199,17 +236,21 @@ class DataHandler(dict):
 # Test Code for metadata
 if __name__ == "__main__":
     # Initializing
-    dHandler = DataHandler()
-    cur_dir = Path("./")
-    test_csv = list(cur_dir.glob("*.csv"))[0]
+    # dHandler = DataHandler()
+    # cur_dir = Path("./")
+    # test_csv = list(cur_dir.glob("*.csv"))[0]
 
-    innerdict = {"fish":"yellow", "joker":"persona5"}
-    mdict = {"file_name": str(test_csv.stem), "cat":"joe", 5:"big", "innerdict": innerdict}
-    # dHandler.store_metadata_into_dataset(test_csv, mdict)
-    dHandler.load_dataset(test_csv, mdict)
-    dHandler.display_datasets()
-    dHandler.create_metadata_for_directory(test_csv, mdict)
+    # innerdict = {"fish":"yellow"}
+    # mdict = {"file_name": str(test_csv.stem), "cat":"joe", 5:"big", "innerdict": innerdict}
+    # # dHandler.store_metadata_into_dataset(test_csv, mdict)
+    # dHandler.load_dataset(test_csv, mdict)
+    # dHandler.display_datasets()
+    # dHandler.create_metadata_for_directory(test_csv, mdict=mdict)
+    
+    
+    dHandler = DataHandler(".", 5)
     
 
+    print(dHandler)
 
 # %%
