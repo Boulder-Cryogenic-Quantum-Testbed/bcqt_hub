@@ -216,6 +216,18 @@ class DataHandler(dict):
             with open("metadata.json", "w", encoding="utf8") as json_file:
                 json.dump(mdict, json_file, indent=4)
         # print("Json file already exists")
+
+        # NEED TO TEST 
+    def load_metadata_and_display(self, dir_path:Path):
+        current_json = list(dir_path.glob("*.json"))
+        if len(current_json) == 1:
+            with open('metadata.json', 'w', encoding='utf8') as json_file:
+                metadata = json.load(json_file)
+            display(metadata)
+        elif (len(current_json) == 0) and dir_path.is_dir():
+            display("There is no metadata, please call 'create_metadata_for_directory' to create one")
+        else:
+            display("There is more than one metadata file, please check")
     
     # Come back to do to insert a json file (in skele form)
     # do we (2) want to try to store the actual metadata
@@ -248,7 +260,7 @@ if __name__ == "__main__":
     # dHandler.create_metadata_for_directory(test_csv, mdict=mdict)
     
     
-    dHandler = DataHandler(".", 5)
+    dHandler = DataHandler(".")
     
 
     print(dHandler)
