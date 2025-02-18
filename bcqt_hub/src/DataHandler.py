@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import json
+from collections import UserDict
 from pathlib import Path
 from datetime import datetime
 
@@ -118,7 +119,7 @@ class DataSet():
         return f"DataSet: {len(self) = }"
     
     
-class DataHandler(dict):
+class DataHandler(UserDict):
     
     """
         modified dict that has built-in support for:
@@ -141,26 +142,13 @@ class DataHandler(dict):
     """
     
     
-    def __init__(self, path):
+    def __init__(self):
         super().__init__()
-        if isinstance(path, Path) is False :
-            raise TypeError("argument 'file_path' is not a Path object.")
-        self.path = path
+        # if isinstance(path, Path) is False :
+        #     raise TypeError("argument 'file_path' is not a Path object.")
+        # self.path = path
         self.list_of_datasets = {}
-
-        # check if path is a directory or a single csv
-        
-        if path.is_dir() is True:
-            self.load_data_directory(self.path, {})
-            self.display_datasets()
-            # self.create_metadata_for_directory(self.path, {})
-            self.load_metadata_and_display(self.path)
-        elif path.is_file() is True:
-            self.load_dataset(self.path, {})
-            self.display_datasets()
-        # if directory: create multiple dsets that load all csvs, then load json if it exists
-        
-        # if file: create on dset that loads a single csv
+        self.key = 0
 
 
         """
@@ -183,8 +171,24 @@ class DataHandler(dict):
                 an element
             
             
-        
         """
+        # FIX FOR LATER
+    def load_sets():
+        
+        # check if path is a directory or a single csv
+        
+        # if path.is_dir() is True:
+        #     self.load_data_directory(self.path, {})
+        #     self.display_datasets()
+        #     # self.create_metadata_for_directory(self.path, {})
+        #     self.load_metadata_and_display(self.path)
+        # elif path.is_file() is True:
+        #     self.load_dataset(self.path, {})
+        #     self.display_datasets()
+        # if directory: create multiple dsets that load all csvs, then load json if it exists
+        
+        # if file: create on dset that loads a single csv
+        pass
 
     # Load a directory of path objects and create a corresponding dataset object for all of them
     def load_data_directory(self, path:Path, mdict:dict):
@@ -203,8 +207,10 @@ class DataHandler(dict):
             raise TypeError("argument 'file_path' is not a Path object.")
         
         dset = self.create_dataset(file_path, metadict)
-        file_name = str(file_path.stem)
-        self.list_of_datasets[file_name] = dset
+        # file_name = str(file_path.stem)
+        self.list_of_datasets[self.key] = dset
+        # Look INTO Ordered dict
+        self.key += 1
         
 
     # Create a dataset object from a path object 
@@ -214,9 +220,11 @@ class DataHandler(dict):
     
     def display_datasets(self, number_of_rows=2):
         for key, value in self.list_of_datasets.items():
-            print(key)
+            # print(key)
+            display(f"Index: {key}")
             # Uncomment the print if not using the juypter notebook and comment out the display
                 # print(value.head(number_of_rows))
+            display(value.get_file_name())
             display(value.data.head(number_of_rows))
             # display(value.get_meta_data())
 
@@ -239,7 +247,7 @@ class DataHandler(dict):
             display("There is no metadata, please call 'create_metadata_for_directory' to create one")
         else:
             display("There is more than one metadata file, please check")
-    
+     
     # Come back to do to insert a json file (in skele form)
     # do we (2) want to try to store the actual metadata
 
@@ -256,6 +264,13 @@ class DataHandler(dict):
 
 # %%
 
+# TODO (2/18/2025)
+    # Fix using the object as a dict
+    # Save data
+        # Let datahandler accept pandasframe, array, list
+        # Export/Saves the data into a csv
+        # 
+
 # Test Code for metadata
 if __name__ == "__main__":
     # Initializing
@@ -266,9 +281,22 @@ if __name__ == "__main__":
     # dHandler = DataHandler(test_csv)
 
     data_dir = Path("../../experiments/TWPA Calibration/data/cooldown59/Line6_SEG_PdAu_02/Line6_SEG_PdAu_02_01_21_0108PM_TWPA_Calibration")
-    data_dir_list = list(data_dir.glob("*"))[0]
-    display(data_dir_list)
-    dh = DataHandler(data_dir_list)
+    # data_dir_list = list(data_dir.glob("*"))
+    # display(data_dir_list)
+
+    dh = DataHandler()
+    
+    for direct in list(data_dir.glob("*")):
+        dh.load_data_directory(direct, None)
+    dh.display_datasets()
+
+
+    display(dh.list_of_datasets[0])
+
+    # for indx, dset_result in dh.items():
+    #     display(indx)
+    #     display(dset_result)
+    #     pass
     # dh.display_datasets()
 
 
@@ -278,6 +306,8 @@ if __name__ == "__main__":
     # dHandler.load_dataset(test_csv, mdict)
     # dHandler.display_datasets()
     # dHandler.create_metadata_for_directory(test_csv, mdict=mdict)
+
+
     
     
     
