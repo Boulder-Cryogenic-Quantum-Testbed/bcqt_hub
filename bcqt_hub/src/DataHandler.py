@@ -143,11 +143,21 @@ class DataHandler(dict):
     
     def __init__(self, path):
         super().__init__()
+        if isinstance(path, Path) is False :
+            raise TypeError("argument 'file_path' is not a Path object.")
         self.path = path
         self.list_of_datasets = {}
 
         # check if path is a directory or a single csv
         
+        if path.is_dir() is True:
+            self.load_data_directory(self.path, {})
+            self.display_datasets()
+            # self.create_metadata_for_directory(self.path, {})
+            self.load_metadata_and_display(self.path)
+        elif path.is_file() is True:
+            self.load_dataset(self.path, {})
+            self.display_datasets()
         # if directory: create multiple dsets that load all csvs, then load json if it exists
         
         # if file: create on dset that loads a single csv
@@ -215,7 +225,8 @@ class DataHandler(dict):
         if len(current_json) == 0:
             with open("metadata.json", "w", encoding="utf8") as json_file:
                 json.dump(mdict, json_file, indent=4)
-        # print("Json file already exists")
+        else:
+            display("Json file already exists")
 
         # NEED TO TEST 
     def load_metadata_and_display(self, dir_path:Path):
@@ -251,6 +262,15 @@ if __name__ == "__main__":
     # dHandler = DataHandler()
     # cur_dir = Path("./")
     # test_csv = list(cur_dir.glob("*.csv"))[0]
+    # # print(test_csv)
+    # dHandler = DataHandler(test_csv)
+
+    data_dir = Path("../../experiments/TWPA Calibration/data/cooldown59/Line6_SEG_PdAu_02/Line6_SEG_PdAu_02_01_21_0108PM_TWPA_Calibration")
+    data_dir_list = list(data_dir.glob("*"))[0]
+    display(data_dir_list)
+    dh = DataHandler(data_dir_list)
+    # dh.display_datasets()
+
 
     # innerdict = {"fish":"yellow"}
     # mdict = {"file_name": str(test_csv.stem), "cat":"joe", 5:"big", "innerdict": innerdict}
@@ -260,9 +280,8 @@ if __name__ == "__main__":
     # dHandler.create_metadata_for_directory(test_csv, mdict=mdict)
     
     
-    dHandler = DataHandler(".")
     
 
-    print(dHandler)
+    # print(dHandler)
 
 # %%
