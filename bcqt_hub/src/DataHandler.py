@@ -1,6 +1,7 @@
 # %%
 import numpy as np
 import pandas as pd
+import copy
 import json
 from collections import UserDict
 from pathlib import Path
@@ -116,7 +117,7 @@ class DataSet():
         return len(self.data)
     
     def __repr__(self):
-        return f"DataSet: {len(self) = }"
+        return f"DataSet obj of length {len(self)}"
     
     
 class DataHandler(UserDict):
@@ -286,20 +287,25 @@ if __name__ == "__main__":
 
     dh = DataHandler()
     
-    for direct in list(data_dir.glob("*")):
+    csv_list = [x for x in list(data_dir.glob("*"))if "DS" not in x.name]
+    for direct in csv_list:
         dh.load_data_directory(direct, None)
-    dh.display_datasets()
+        
+    # dh.display_datasets()
 
 
-    display(dh.list_of_datasets[0])
+    display(dh.list_of_datasets[0].data)
+    
+    
 
     # for indx, dset_result in dh.items():
     #     display(indx)
     #     display(dset_result)
     #     pass
     # dh.display_datasets()
+    
 
-
+        
     # innerdict = {"fish":"yellow"}
     # mdict = {"file_name": str(test_csv.stem), "cat":"joe", 5:"big", "innerdict": innerdict}
     # # dHandler.store_metadata_into_dataset(test_csv, mdict)
@@ -308,10 +314,59 @@ if __name__ == "__main__":
     # dHandler.create_metadata_for_directory(test_csv, mdict=mdict)
 
 
+    # %%
+    
+    """
+        2/18/25 - currently, our DataHandler can load an entire directory of csv files, or load csv files one by one.
+        
+        However, we also want DataHandler to save the data we've taken, not just load data from a past experiment
+        
+        Here are some possible implementations of how we'd actually *use* DataHandler during the measurement process
+    
+    """
+    
+    #           . 
+    #           .
+    #  some measurement code
+    #           .
+    #           .
     
     
+    data_to_save = {1 : [1,2,3,"a","b","c"],
+                    2 : [1,2,3,"a","b","c"],
+                    3 : [1,2,3,"a","b","c"],}
+    
+    dh_save =  DataHandler()
     
 
+    #### method 1 - one array at a time
+    # likely will be used by #2
+    
+    for idx, result in data_to_save.items():
+        dh_save.save_array(result)
+        
+    #### method 2 - many arrays at once
+    # not a big fan since this means data will be saved all at once
+    # in the end, but can be useful when taking small amounts of data
+    
+    dh_save.save_array_dict(data_to_save)
+    
+    
+    #### method 3 - pass datahandler object to measurement method, this is the final goal for the object
+    """
+    
+    experiment.take_data(dh_save)
+    
+    #           . 
+    #           .
+    #    measurement code
+    #           .
+    #           .
+    
+    dh_save.display_datasets()
+    
+    """
+    
     # print(dHandler)
 
 # %%
