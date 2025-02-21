@@ -148,7 +148,7 @@ class DataHandler(UserDict):
         # if isinstance(path, Path) is False :
         #     raise TypeError("argument 'file_path' is not a Path object.")
         # self.path = path
-        self.list_of_datasets = {}
+        # self.list_of_datasets = {}
         self.key = 0
 
 
@@ -209,7 +209,7 @@ class DataHandler(UserDict):
         
         dset = self.create_dataset(file_path, metadict)
         # file_name = str(file_path.stem)
-        self.list_of_datasets[self.key] = dset
+        self[self.key] = dset
         # Look INTO Ordered dict
         self.key += 1
         
@@ -220,7 +220,7 @@ class DataHandler(UserDict):
         return dset
     
     def display_datasets(self, number_of_rows=2):
-        for key, value in self.list_of_datasets.items():
+        for key, value in self.items():
             # print(key)
             display(f"Index: {key}")
             # Uncomment the print if not using the juypter notebook and comment out the display
@@ -271,6 +271,7 @@ class DataHandler(UserDict):
         # Let datahandler accept pandasframe, array, list
         # Export/Saves the data into a csv
         # 
+    # Recursion to find all csv data
 
 # Test Code for metadata
 if __name__ == "__main__":
@@ -291,27 +292,12 @@ if __name__ == "__main__":
     for direct in csv_list:
         dh.load_data_directory(direct, None)
         
-    # dh.display_datasets()
+    dh.display_datasets()
 
-
-    display(dh.list_of_datasets[0].data)
     
+    # for index in range(len(dh)):
+    #     display(dh[index].data)
     
-
-    # for indx, dset_result in dh.items():
-    #     display(indx)
-    #     display(dset_result)
-    #     pass
-    # dh.display_datasets()
-    
-
-        
-    # innerdict = {"fish":"yellow"}
-    # mdict = {"file_name": str(test_csv.stem), "cat":"joe", 5:"big", "innerdict": innerdict}
-    # # dHandler.store_metadata_into_dataset(test_csv, mdict)
-    # dHandler.load_dataset(test_csv, mdict)
-    # dHandler.display_datasets()
-    # dHandler.create_metadata_for_directory(test_csv, mdict=mdict)
 
 
     # %%
