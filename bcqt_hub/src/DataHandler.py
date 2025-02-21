@@ -145,10 +145,6 @@ class DataHandler(UserDict):
     
     def __init__(self):
         super().__init__()
-        # if isinstance(path, Path) is False :
-        #     raise TypeError("argument 'file_path' is not a Path object.")
-        # self.path = path
-        # self.list_of_datasets = {}
         self.key = 0
 
 
@@ -190,6 +186,17 @@ class DataHandler(UserDict):
         
         # if file: create on dset that loads a single csv
         pass
+
+    def load_data_directory_rec(self, path:Path, mdict:dict):
+        list_of_file_or_directory = list(path.glob("*"))
+        for file_or_dirctory in list_of_file_or_directory:
+            if file_or_dirctory.is_dir() is True:
+                self.load_data_directory_rec(file_or_dirctory, mdict)
+            elif file_or_dirctory.is_file() is True:
+                self.load_dataset(file_or_dirctory, mdict)
+            else:
+                print(f"Directory/File that is incorrect {str(file_or_dirctory)}")
+
 
     # Load a directory of path objects and create a corresponding dataset object for all of them
     def load_data_directory(self, path:Path, mdict:dict):
@@ -249,20 +256,6 @@ class DataHandler(UserDict):
         else:
             display("There is more than one metadata file, please check")
      
-    # Come back to do to insert a json file (in skele form)
-    # do we (2) want to try to store the actual metadata
-
-    # For point 2 could see creating different amoutns of columns for each dataset
-    #   which could be tedious but overall more helpful as it is more accessible
-
-    # How do we want to handle export the datahandler and/or all the datasets?
-
-    # HW: Test the datahandler/dataset on the massive amount of CSV files directory and 
-    #   make sure the datahandler creates all the respective dataframes 
-    #   and creates the corresponding json file for the relevant metadata / directory 
-    #       (make metadata simple like name)
-    #   Make sure in juypter notebook
-
 # %%
 
 # TODO (2/18/2025)
@@ -283,15 +276,18 @@ if __name__ == "__main__":
     # dHandler = DataHandler(test_csv)
 
     data_dir = Path("../../experiments/TWPA Calibration/data/cooldown59/Line6_SEG_PdAu_02/Line6_SEG_PdAu_02_01_21_0108PM_TWPA_Calibration")
+    parent_data_dir = Path("../../experiments/TWPA Calibration/data/cooldown59/Line6_SEG_PdAu_02")
     # data_dir_list = list(data_dir.glob("*"))
     # display(data_dir_list)
 
     dh = DataHandler()
     
-    csv_list = [x for x in list(data_dir.glob("*"))if "DS" not in x.name]
-    for direct in csv_list:
-        dh.load_data_directory(direct, None)
-        
+    # csv_list = [x for x in list(data_dir.glob("*"))if "DS" not in x.name]
+    # for direct in csv_list:
+    #     dh.load_data_directory(direct, None)
+    
+    dh.load_data_directory_rec(parent_data_dir, None)
+
     dh.display_datasets()
 
     
