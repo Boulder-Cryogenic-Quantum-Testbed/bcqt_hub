@@ -16,9 +16,10 @@ dstr = datetime.today().strftime("%m_%d_%H%M")
 current_dir = Path(".")
 script_filename = Path(__file__).stem
 
+sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub\experiments")
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub")
 
-import bcqt_hub.experiments.quick_helpers as qh
+import experiments.quick_helpers as qh
 from bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 from bcqt_hub.drivers.instruments.SG_Anritsu import SG_Anritsu
 
@@ -31,7 +32,7 @@ VNA_Keysight_InstrConfig = {
     # "rm_backend" : "@py",
     "rm_backend" : None,
     "instr_address" : 'TCPIP0::192.168.0.105::inst0::INSTR',
-    "edelay" : 60,
+    "edelay" : 73.9,
     "averages" : 2,
     "sparam" : ['S21'],  
     
@@ -56,7 +57,7 @@ PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
 #                 (7.5, 8.0)
 # ]
 
-start, stop, step = 6, 7.5, 0.5
+start, stop, step = 5.5, 7.5, 0.5
 all_freqs = [
     (x, x+step) for x in np.arange(start, stop, step).round(2)
     ]
@@ -64,7 +65,7 @@ all_freqs = [
 all_freqs.append((7.4, 7.6))
 
 Measurement_Configs = {
-    "n_points" : 10001,
+    "n_points" : 30001,
     "if_bandwidth" : 1000,
     "sparam" : ['S21'],  
     "power" : -40,
@@ -104,6 +105,7 @@ for idx, freq_span in enumerate(all_freqs):  # loop over all freq spans
     """
         define relevant variables, update meas params
     """
+    
     freq_start = min(freq_span)
     freq_stop = max(freq_span)  # in case they are backwards!
     freq_str = f"{freq_start:1.1f}GHz_{freq_stop:1.1f}GHz".replace('.',"p")
@@ -145,8 +147,8 @@ for idx, freq_span in enumerate(all_freqs):  # loop over all freq spans
     magn = s2p_df["S21 magn_dB"][1:].to_numpy()
     
     ### save data
-    save_dir = r"./data/cooldown59/Line6_SEG_PdAu_02"
-    expt_category = rf"Line2_RG_Nb_Qb02/{dstr}"
+    save_dir = r"./data/cooldown59/Line5_ManuelsQubit"
+    expt_category = rf"Broad_Sweep/{dstr}"
     num_avgs = Measurement_Configs["averages"]
     meas_name = rf"{freq_str}_{power:1.1f}dBm_{num_avgs}avgs_{n_points}points".replace(".","p")
 
@@ -192,7 +194,6 @@ ax1, ax2 = axes
 ax1.plot(freqs, magn_dB, 'r.')
 ax2.plot(freqs, phase_rad, 'b.')
 
-
 ax1.set_title("Magn vs Frequency")
 ax2.set_title("Phase vs Frequency")
 
@@ -206,7 +207,7 @@ ax2.set_ylabel("VNA S21 Phase [rad]")
 
 # %% now use qh.find_resonators() to... find the f_res points
 
-freq_min, freq_max = 6.2e9, 7.5e9
+freq_min, freq_max = 7e9, 7.35e9
 freq_min_idx, freq_max_idx = np.argmin(abs(freqs - freq_min)), np.argmin(abs(freqs - freq_max))
 
 df_dict = {
@@ -216,18 +217,18 @@ df_dict = {
 }
 
 find_peaks_kwargs = {
-    "height" : None,
-    "threshold" : None,
-    "distance" : len(freqs)//30,
-    "prominence" : 10,
-    "width" : (None, None),
+    "height" : 25,
+    "threshold" : 0.5,
+    "distance" : len(freqs)//100,
+    "prominence" : 4,
+    "width" : (None, 38),
 }
 
 
 res_finder_df = pd.DataFrame(df_dict)
 
 peak_idxs, all_axes = qh.find_resonators(res_finder_df, find_peaks_kwargs=find_peaks_kwargs, fig_title=f"\n{expt_category}\n{meas_name}",
-                                         plot_phase=False) 
+                                         plot_phase=True) 
 
 peak_idxs += freq_min_idx  # shift indices back up since we truncated the dataframe
 
