@@ -10,8 +10,6 @@ from scipy.signal import find_peaks
 from datetime import datetime
 from pathlib import Path
 import sys
-sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub\bcqt_hub\experiments")
-import quick_helpers as qh
 
 def find_resonators(s2p_df, fig_title="", find_peaks_kwargs={}, plot_phase = False):
     
@@ -29,7 +27,7 @@ def find_resonators(s2p_df, fig_title="", find_peaks_kwargs={}, plot_phase = Fal
     
     peaks, _ = find_peaks(-magn_dB, **find_peaks_kwargs)
 
-    display(peaks)
+    display(s2p_df)
     
     for num, idx in enumerate(peaks):
         if num >= 10:
@@ -85,7 +83,7 @@ def archive_data(VNA, s2p_df:pd.DataFrame, meas_name:str, expt_category:str = ''
     print(final_path.exists())
     s2p_df.to_csv(final_path)
     
-    if len(all_axes) != 0:
+    if len(all_axes) != 0 and isinstance(all_axes, list):
         for ax in all_axes:
             fig = ax.get_figure()
             # title = fig.get_suptitle().replace(" - ","_") + f"{expt_no:03d}.png"

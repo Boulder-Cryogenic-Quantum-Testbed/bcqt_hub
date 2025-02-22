@@ -1,8 +1,19 @@
-*__pycache__*
-*/data/*
-*.csv*
+# misc. experiment outputs
 *.png
-*.zip
 *.pk1
 
+
+# data objects
+*.7z
+*.zip
+*.csv*
+*/data/*
+
+# garbage
 *DS_Store*
+*__pycache__*
+
+
+# attempt to remove cryoswitch files
+*4.909V*.json
+*pulse_logging.txt
