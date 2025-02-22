@@ -22,10 +22,12 @@ dstr = datetime.today().strftime("%m_%d_%H%M")
 current_dir = Path(".")
 script_filename = Path(__file__).stem
 
-sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub")
+sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub\experiments")
+import quick_helpers as qh
 
+sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub\bcqt_hub")
+sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub")
 from bcqt_hub.src.DataAnalysis import DataAnalysis
-import bcqt_hub.experiments.quick_helpers as qh
 from bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 from bcqt_hub.drivers.instruments.SG_Anritsu import SG_Anritsu
 

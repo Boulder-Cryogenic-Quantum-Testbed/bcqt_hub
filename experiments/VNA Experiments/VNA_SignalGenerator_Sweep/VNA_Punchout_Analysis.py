@@ -7,10 +7,12 @@ import matplotlib.pyplot as plt
  
 # %%
 
-all_data_folders = Path(f"data").glob("*")
+all_data_folders = list(Path(f"data").glob("*_02*"))
 
-data_folder = list(all_data_folders)[-1]
+data_folder = all_data_folders[-1]
 data_filepath = list(data_folder.glob("*.pk1"))[0]
+
+display(all_data_folders)
 
 with open(data_filepath, 'rb') as fp:
     all_punchout_results = pickle.load(fp)
