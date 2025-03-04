@@ -170,10 +170,6 @@ class DataHandler(UserDict):
             
         """
         # FIX FOR LATER
-    def load_sets():
-        
-        # check if path is a directory or a single csv
-        
         # if path.is_dir() is True:
         #     self.load_data_directory(self.path, {})
         #     self.display_datasets()
@@ -185,11 +181,24 @@ class DataHandler(UserDict):
         # if directory: create multiple dsets that load all csvs, then load json if it exists
         
         # if file: create on dset that loads a single csv
+    def load_sets(self, path:Path, mdict:dict, overwrite_flag=False):
+        
+        # check if path is a directory or a single csv
+        self.create_metadata_for_directory(path, mdict,overwrite_flag)
+        self.load_data_directory_rec(path, mdict)
+    
         pass
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+# Loading directory/dataset into datahandler
+
+    # Load a a directory containing csv objects into the datahandler recursively
     def load_data_directory_rec(self, path:Path, mdict:dict):
         list_of_file_or_directory = list(path.glob("*"))
         for file_or_dirctory in list_of_file_or_directory:
+            if ".json" in str(file_or_dirctory):
+                # display(f"{file_or_dirctory}")
+                continue
             if file_or_dirctory.is_dir() is True:
                 self.load_data_directory_rec(file_or_dirctory, mdict)
             elif file_or_dirctory.is_file() is True:
@@ -199,15 +208,13 @@ class DataHandler(UserDict):
 
 
     # Load a directory of path objects and create a corresponding dataset object for all of them
-    def load_data_directory(self, path:Path, mdict:dict):
-        if path.is_dir() is False:
-            raise TypeError("argument 'path' is not a directory object.")
-
-        data_dir_files = list(path.glob("*"))
-        self.create_metadata_for_directory(path, mdict)
-        for file in data_dir_files:
-            self.load_dataset(file, mdict)
-            
+    # def load_data_directory(self, path:Path, mdict:dict):
+    #     if path.is_dir() is False:
+    #         raise TypeError("argument 'path' is not a directory object.")
+    #     data_dir_files = list(path.glob("*"))
+    #     self.create_metadata_for_directory(path, mdict)
+    #     for file in data_dir_files:
+    #         self.load_dataset(file, mdict)
     
     # Load a singular dataset from a given path object
     def load_dataset(self, file_path: Path, metadict:dict):
@@ -215,13 +222,9 @@ class DataHandler(UserDict):
             raise TypeError("argument 'file_path' is not a Path object.")
         
         dset = self.create_dataset(file_path, metadict)
-        # file_name = str(file_path.stem)
         self[self.key] = dset
-        # Look INTO Ordered dict
         self.key += 1
         
-
-    # Create a dataset object from a path object 
     def create_dataset(self, csv_path, metadict):
         dset = DataSet(csv_path, metadict)
         return dset
@@ -232,39 +235,107 @@ class DataHandler(UserDict):
             display(f"Index: {key}")
             # Uncomment the print if not using the juypter notebook and comment out the display
                 # print(value.head(number_of_rows))
-            display(value.get_file_name())
-            display(value.data.head(number_of_rows))
+            if isinstance(value, DataSet) is True:
+                display(value.get_file_name())
+                display(value.data.head(number_of_rows))
+            else:
+                display(value)
+            
             # display(value.get_meta_data())
 
-    def create_metadata_for_directory(self, dir_path:Path, mdict:dict):
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+# Metadata Stuff
+
+    def create_metadata_for_directory(self, dir_path:Path, mdict:dict, overwrite_flag=False):
         current_json = list(dir_path.glob("*.json"))
         if len(current_json) == 0:
-            with open("metadata.json", "w", encoding="utf8") as json_file:
+            with open(dir_path  / "metadata.json", "w", encoding="utf8") as json_file:
+                json.dump(mdict, json_file, indent=4)
+        elif overwrite_flag is True:
+            display("Overwriting metadata.json file")
+            with open(dir_path  / "metadata.json", "w", encoding="utf8") as json_file:
                 json.dump(mdict, json_file, indent=4)
         else:
             display("Json file already exists")
 
+    def read_metadata(self, dir_path):
+        with open(dir_path / "metadata.json", 'r', encoding='utf8') as json_file:
+                metadata = json.load(json_file)
+        return metadata
+
         # NEED TO TEST 
     def load_metadata_and_display(self, dir_path:Path):
         current_json = list(dir_path.glob("*.json"))
+        # display(current_json)
+        # display(dir_path / "metadata.json")
         if len(current_json) == 1:
-            with open('metadata.json', 'w', encoding='utf8') as json_file:
-                metadata = json.load(json_file)
+            metadata = self.read_metadata(dir_path)
             display(metadata)
         elif (len(current_json) == 0) and dir_path.is_dir():
             display("There is no metadata, please call 'create_metadata_for_directory' to create one")
         else:
             display("There is more than one metadata file, please check")
-     
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+# Saving/exporting data from datahandler
+
+    def save_array(self, arr:list):
+        self[self.key] = arr
+        self.key += 1
+        
+    def save_array_dict(self, dict:dict):
+        for idx, value in dict.items():
+            self.save_array(value)
+
+    def export_from_type_pandas(self, path:Path):
+        for idx, value in self.items():
+            if isinstance(value, DataSet) or isinstance(value, pd.DataFrame):
+                if isinstance(value, DataSet):
+                    value.data.to_csv(path)
+                else:
+                    value.to_csv(path)
+
+    def export_data(self, measurement:str, save_dir:str = "./data", experiment_category:str = ""):
+        if not isinstance(save_dir, Path):
+            save_dir = Path(save_dir).absolute()
+        
+        file_dir = save_dir / experiment_category / measurement
+
+        if not file_dir.exists():
+            display(f"Creating experiment category: {experiment_category}")
+            display(f"  under the save directory: {save_dir}")
+            file_dir.mkdir(exist_ok=True, parents=True)
+
+        self.export_from_type_pandas(file_dir)
+
+        pass
+
 # %%
 
 # TODO (2/18/2025)
-    # Fix using the object as a dict
     # Save data
-        # Let datahandler accept pandasframe, array, list
+        # Let datahandler accept pandasframe, list/array
         # Export/Saves the data into a csv
-        # 
-    # Recursion to find all csv data
+    # Recursion
+    # Make DataHandler into a UserDict
+
+# TODO (2/25/2025)
+    # Work on save/export data
+        # Look in quick_helpers at archive_data for inspiration
+        # Want to have the metadata file dictate what the file names are
+
+    # Bug with how it handles files that are represented with some multiple of .33 since floating point representation
+        # Example: TWPA_Calibration_7908MHz_-15.33dBm_OFF\TWPA_Calibration_7908MHz_-15.33dBm_OFF_001.csv
+            # Gets turned into TWPA_Calibration_7908MHz_-15.333333333333334dBm_OFF\TWPA_Calibration_7908MHz_-15.333333333333334dBm_OFF_001.csv
+    
+    # Implement two functions to exclude or include certain key phrases within filepath/etc.
+
+    # Start working on metadata file format (cleaning it up a lot) (GOAL: get 80% of it done)
+
+# TODO 
+
+
+    
 
 # Test Code for metadata
 if __name__ == "__main__":
@@ -285,10 +356,17 @@ if __name__ == "__main__":
     # csv_list = [x for x in list(data_dir.glob("*"))if "DS" not in x.name]
     # for direct in csv_list:
     #     dh.load_data_directory(direct, None)
-    
-    dh.load_data_directory_rec(parent_data_dir, None)
+    metadata_info = {
+        "Instrument name": "TWPA",
+        "Timestamp": f"{datetime.now().date()}{"_"}{datetime.now().time().hour}:{datetime.now().time().minute}",
+        "Power": 7990
+    }
+    dh.load_sets(parent_data_dir, metadata_info, True)
+    # dh.create_metadata_for_directory(parent_data_dir, {"cats":"fish"})
+    # dh.load_data_directory_rec(parent_data_dir, None)
 
-    dh.display_datasets()
+    dh.load_metadata_and_display(parent_data_dir)
+    # dh.display_datasets()
 
     
     # for index in range(len(dh)):
@@ -318,21 +396,26 @@ if __name__ == "__main__":
                     2 : [1,2,3,"a","b","c"],
                     3 : [1,2,3,"a","b","c"],}
     
+    
     dh_save =  DataHandler()
     
 
     #### method 1 - one array at a time
     # likely will be used by #2
     
-    for idx, result in data_to_save.items():
-        dh_save.save_array(result)
-        
+    # for idx, result in data_to_save.items():
+    #     dh_save.save_array(result)
+    
+    # dh_save.display_datasets()
+    
     #### method 2 - many arrays at once
     # not a big fan since this means data will be saved all at once
     # in the end, but can be useful when taking small amounts of data
     
     dh_save.save_array_dict(data_to_save)
+
     
+    dh_save.display_datasets()
     
     #### method 3 - pass datahandler object to measurement method, this is the final goal for the object
     """
