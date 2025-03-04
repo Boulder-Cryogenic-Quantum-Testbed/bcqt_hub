@@ -72,7 +72,10 @@ class DataSet():
     #     self.append_dict( {label : data} )
 
     def load_csv(self, csv_path_string):
-        return pd.read_csv(csv_path_string, index_col=0)
+        if csv_path_string.suffix != ".csv":
+            return pd.DataFrame()   # TODO: how will we handle errors? empty dataframe? None?
+        else:
+            return pd.read_csv(csv_path_string, index_col=0)
             
     def get_data(self):
         return self.data
@@ -80,7 +83,7 @@ class DataSet():
     def get_file_name(self):
         return str(self.file_name.stem)
     
-    def get_meta_data(self):
+    def get_metadata(self):
         return self.metadata
     
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
@@ -147,7 +150,6 @@ class DataHandler(UserDict):
         super().__init__()
         self.key = 0
 
-
         """
             we need to figure out what the keyword for each dataset should be
             
@@ -160,15 +162,13 @@ class DataHandler(UserDict):
                 
                 print(key, dset)
                 
-                
-
             previous code
                 key is integer, to mimic enumerate()
                 but also keeps keys static when removing
                 an element
             
-            
         """
+        
         # FIX FOR LATER
     def load_sets():
         
@@ -226,15 +226,18 @@ class DataHandler(UserDict):
         dset = DataSet(csv_path, metadict)
         return dset
     
-    def display_datasets(self, number_of_rows=2):
-        for key, value in self.items():
-            # print(key)
+    
+    def display_datasets(self, number_of_rows=3, num_dsets_to_display=5):
+        for idx, (key, value) in enumerate(self.items()):
+            if (idx % (len(self.items())//num_dsets_to_display)) != 0:
+                continue
             display(f"Index: {key}")
             # Uncomment the print if not using the juypter notebook and comment out the display
                 # print(value.head(number_of_rows))
             display(value.get_file_name())
             display(value.data.head(number_of_rows))
-            # display(value.get_meta_data())
+            # display(value.get_metadata())
+        
 
     def create_metadata_for_directory(self, dir_path:Path, mdict:dict):
         current_json = list(dir_path.glob("*.json"))
@@ -277,7 +280,9 @@ if __name__ == "__main__":
 
     data_dir = Path("../../experiments/TWPA Calibration/data/cooldown59/Line6_SEG_PdAu_02/Line6_SEG_PdAu_02_01_21_0108PM_TWPA_Calibration")
     parent_data_dir = Path("../../experiments/TWPA Calibration/data/cooldown59/Line6_SEG_PdAu_02")
-    # data_dir_list = list(data_dir.glob("*"))
+    assert data_dir.exists()
+    
+    # data_dir_list = [data_path.absolute() for data_path in data_dir.glob("*")]
     # display(data_dir_list)
 
     dh = DataHandler()
@@ -290,7 +295,6 @@ if __name__ == "__main__":
 
     dh.display_datasets()
 
-    
     # for index in range(len(dh)):
     #     display(dh[index].data)
     
@@ -307,13 +311,6 @@ if __name__ == "__main__":
     
     """
     
-    #           . 
-    #           .
-    #  some measurement code
-    #           .
-    #           .
-    
-    
     data_to_save = {1 : [1,2,3,"a","b","c"],
                     2 : [1,2,3,"a","b","c"],
                     3 : [1,2,3,"a","b","c"],}
@@ -326,17 +323,19 @@ if __name__ == "__main__":
     
     for idx, result in data_to_save.items():
         dh_save.save_array(result)
-        
+    
     #### method 2 - many arrays at once
     # not a big fan since this means data will be saved all at once
     # in the end, but can be useful when taking small amounts of data
     
-    dh_save.save_array_dict(data_to_save)
+    dh_save.save_array_dict(data_to_save)  # XXX - 03/04 jorge: I'd rather just call 'save_array' in a loop than use a method like this
     
     
-    #### method 3 - pass datahandler object to measurement method, this is the final goal for the object
+    #### method 3 - pass datahandler object to measurement method, this is the final goal for the project
+    
     """
     
+    dh_save = DataHandler()
     experiment.take_data(dh_save)
     
     #           . 
@@ -346,9 +345,18 @@ if __name__ == "__main__":
     #           .
     
     dh_save.display_datasets()
+    dh_save.save_experiment_data()
     
     """
     
-    # print(dHandler)
-
-# %%
+    
+    # XXX - 03/04 jorge:    there should be a way for the dataset (or the datahandler) to handle errors
+    #                               that arise from invalid objects, like "DS_Store". Perhaps the simplest
+    #                               way would be for the DataSet to set itself equal to None, and have the 
+    #                               DataHandler watch out for that and remove if it arises? Or maybe a flag
+    #                               within DataSet that's called "error_state" or something. The point is
+    #                               that instead of crashing the entire experiment, an invalid DataSet will
+    #                               will just take itself out to the trash
+    # TODO:                  can we incorporater the python tabulate module?
+    
+    
