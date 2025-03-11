@@ -1,8 +1,8 @@
 # %%
 import numpy as np
 import pandas as pd
-import copy
 import json
+from varname import argname
 from collections import UserDict
 from pathlib import Path
 from datetime import datetime
@@ -43,13 +43,12 @@ class DataSet():
     #     if "configs" in kwargs:
     #         self.add_configs(kwargs["configs"])
     
-    def __init__(self, csv_path, metadata_dict):
+    def __init__(self, csv_path):
         """
 
         """
         self.data = self.load_csv(csv_path)
         self.file_name = csv_path
-        self.metadata = metadata_dict
         
     
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
@@ -82,9 +81,6 @@ class DataSet():
 
     def get_file_name(self):
         return str(self.file_name.stem)
-    
-    def get_metadata(self):
-        return self.metadata
     
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
 
@@ -149,6 +145,7 @@ class DataHandler(UserDict):
     def __init__(self):
         super().__init__()
         self.key = 0
+        self.metadata = {}
 
         """
             we need to figure out what the keyword for each dataset should be
@@ -184,8 +181,8 @@ class DataHandler(UserDict):
     def load_sets(self, path:Path, mdict:dict, overwrite_flag=False):
         
         # check if path is a directory or a single csv
-        self.create_metadata_for_directory(path, mdict,overwrite_flag)
-        self.load_data_directory_rec(path, mdict)
+        self.create_metadata_file_for_directory(path, mdict, overwrite_flag)
+        self.load_data_directory_rec(path)
     
         pass
 
@@ -193,16 +190,16 @@ class DataHandler(UserDict):
 # Loading directory/dataset into datahandler
 
     # Load a a directory containing csv objects into the datahandler recursively
-    def load_data_directory_rec(self, path:Path, mdict:dict):
+    def load_data_directory_rec(self, path:Path):
         list_of_file_or_directory = list(path.glob("*"))
         for file_or_dirctory in list_of_file_or_directory:
             if ".json" in str(file_or_dirctory):
                 # display(f"{file_or_dirctory}")
                 continue
             if file_or_dirctory.is_dir() is True:
-                self.load_data_directory_rec(file_or_dirctory, mdict)
+                self.load_data_directory_rec(file_or_dirctory)
             elif file_or_dirctory.is_file() is True:
-                self.load_dataset(file_or_dirctory, mdict)
+                self.load_dataset(file_or_dirctory)
             else:
                 print(f"Directory/File that is incorrect {str(file_or_dirctory)}")
 
@@ -217,16 +214,16 @@ class DataHandler(UserDict):
     #         self.load_dataset(file, mdict)
     
     # Load a singular dataset from a given path object
-    def load_dataset(self, file_path: Path, metadict:dict):
+    def load_dataset(self, file_path: Path):
         if isinstance(file_path, Path) is False :
             raise TypeError("argument 'file_path' is not a Path object.")
         
-        dset = self.create_dataset(file_path, metadict)
+        dset = self.create_dataset(file_path)
         self[self.key] = dset
         self.key += 1
         
-    def create_dataset(self, csv_path, metadict):
-        dset = DataSet(csv_path, metadict)
+    def create_dataset(self, csv_path):
+        dset = DataSet(csv_path)
         return dset
     
     
@@ -248,15 +245,24 @@ class DataHandler(UserDict):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 # Metadata Stuff
 
-    def create_metadata_for_directory(self, dir_path:Path, mdict:dict, overwrite_flag=False):
+    def create_metadata_file(self, dir_path:Path, mdict:dict = None):
+        with open(dir_path  / "metadata.json", "w", encoding="utf8") as json_file:
+                if mdict == None:
+                    mdict = self.metadata
+                json.dump(mdict, json_file, indent=4)
+
+    def create_metadata_file_for_directory(self, dir_path:Path, mdict:dict, overwrite_flag=False):
         current_json = list(dir_path.glob("*.json"))
         if len(current_json) == 0:
-            with open(dir_path  / "metadata.json", "w", encoding="utf8") as json_file:
-                json.dump(mdict, json_file, indent=4)
+            self.append_metadata(mdict, 3, "mdict") # THIS LINE NEEDS TO BE CHECKED ON 
+            self.create_metadata_file(dir_path, mdict)
+            # self.metadata = self.read_metadata(dir_path)
         elif overwrite_flag is True:
             display("Overwriting metadata.json file")
-            with open(dir_path  / "metadata.json", "w", encoding="utf8") as json_file:
-                json.dump(mdict, json_file, indent=4)
+            # self.metadata.update({argname('mdict', 2):mdict})
+            self.append_metadata(mdict, 3, "mdict") # THIS LINE NEEDS TO BE CHECKED ON 
+            self.create_metadata_file(dir_path, mdict)
+            # self.metadata = self.read_metadata(dir_path)
         else:
             display("Json file already exists")
 
@@ -264,6 +270,10 @@ class DataHandler(UserDict):
         with open(dir_path / "metadata.json", 'r', encoding='utf8') as json_file:
                 metadata = json.load(json_file)
         return metadata
+
+    def append_metadata(self, dict_to_add:dict, backframe=1, str_dict:str = 'dict_to_add'):
+        # display(argname('dict_to_add'))
+        self.metadata.update({argname(f"{str_dict}", frame=backframe):dict_to_add})
 
         # NEED TO TEST 
     def load_metadata_and_display(self, dir_path:Path):
@@ -310,7 +320,10 @@ class DataHandler(UserDict):
 
         self.export_from_type_pandas(file_dir)
 
-        pass
+        
+## Get / Set functions
+    def get_metadata(self):
+        return self.metadata
 
 # %%
 
@@ -334,7 +347,14 @@ class DataHandler(UserDict):
 
     # Start working on metadata file format (cleaning it up a lot) (GOAL: get 80% of it done)
 
-# TODO 
+# TODO (3/4/2025)
+    # Put metadata into datahandler object
+        # Then be able to append (only) dicts to the metadata attribute
+            # Key: Instrument, Value: <configs>
+            # 
+            # getting name of vairable as a string
+        # Should be able to convert it to a json
+
 # Test Code for metadata
 if __name__ == "__main__":
     # Initializing
@@ -361,11 +381,21 @@ if __name__ == "__main__":
         "Timestamp": f"{datetime.now().date()}{"_"}{datetime.now().time().hour}:{datetime.now().time().minute}",
         "Power": 7990
     }
+
+    metadata_info2 = {
+        "Instrument name": "Catci",
+        "Timestamp": f"{datetime.now().date()}{"_"}{datetime.now().time().hour}:{datetime.now().time().minute}",
+        "Power": 200
+    }
     dh.load_sets(parent_data_dir, metadata_info, True)
     # dh.create_metadata_for_directory(parent_data_dir, {"cats":"fish"})
     # dh.load_data_directory_rec(parent_data_dir, None)
 
-    dh.load_metadata_and_display(parent_data_dir)
+    # dh.load_metadata_and_display(parent_data_dir)
+
+    dh.append_metadata(metadata_info2)
+    display(dh.get_metadata())
+    dh.create_metadata_file(parent_data_dir)
     # dh.display_datasets()
 
     # for index in range(len(dh)):
