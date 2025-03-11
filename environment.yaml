@@ -4,22 +4,23 @@ channels:
 dependencies:
   - ca-certificates
   - certifi
+  - dill
+  - h5py
   - ipykernel
   - ipython
+  - ipywidgets
   - matplotlib
   - numpy
   - openssl
   - pandas
+  - pymeasure
   - pyro4
   - python=3.12.3
   - pyvisa
   - pyvisa-py
-  - scipy
-  - zeroconf
-  - h5py
-  - ipywidgets
-  - pymeasure
-  - dill
   - regex
+  - scipy
   - tabulate
+  - varname
+  - zeroconf
 prefix: /Users/jlr7/miniforge3/envs/bcqt-ctrl
