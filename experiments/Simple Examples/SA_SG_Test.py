@@ -6,16 +6,20 @@
     example implementation of bcqt-hub (name??)
 """
 
+# %load_ext autoreload
+# %autoreload 2
+
 import time, sys
 import numpy as np
 import matplotlib.pyplot as plt
-import gpib_ctypes
 
-# gpib_ctypes.gpib.gpib._load_lib(r"C:\Windows\System32\Gpib-32.dll")
-# sys.path.append("..")
 
-from SG_Anritsu import SG_Anritsu
-from SA_RnS_FSEB20 import SA_RnS_FSEB20
+import bcqt_hub
+
+from bcqt_hub.drivers.instruments.SG_Anritsu import SG_Anritsu
+from bcqt_hub.drivers.instruments.SA_RnS_FSEB20 import SA_RnS_FSEB20
+
+
 
 SA_RnS_InstrConfig = {
     "instrument_name" : "SA_RnS",
@@ -28,8 +32,8 @@ SG_Anritsu_InstrConfig = {
     "instrument_name" : "SG_Anritsu",
     # "rm_backend" : "@py",
     "rm_backend" : None,
-    "instr_address" : 'GPIB::8::INSTR',  # test instr
-    # "instr_address" : 'GPIB::9::INSTR',  # twpa
+    "instr_address" : 'GPIB::8::INSTR',  # 3691A  (as of 3/13/25)
+    # "instr_address" : 'GPIB::9::INSTR',  # 3692C
 }
 
 
@@ -48,10 +52,11 @@ test_SG.return_instrument_parameters(print_output=True)
 
 test_SG.set_freq(4.5e9)
 test_SG.set_power(-20)
-test_SG.set_output(True)
+test_SG.set_output(False)
 
 test_SG.return_instrument_parameters(print_output=True)
 
+# %%
 
 print("\n~~ Initializing SA ~~")
 time.sleep(0.5)
