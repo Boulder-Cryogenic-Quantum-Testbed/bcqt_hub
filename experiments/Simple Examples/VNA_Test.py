@@ -108,14 +108,16 @@ Expt_Config = {
     "points" : 50,
     "f_center" : 6445962657.0,
     "span" : 1.5e6,
-    "if_bandwidth" : 200,
-    "power" : -50,
+    "if_bandwidth" : 1e3,
+    "power" : 0,
     "edelay" : 72.9,
     "averages" : 300,
-    "sparam" : 'S21',
-    # "segment_type" : "homophasal",
+    "sparam" : ['S21'],
     
-    "segment_type" : "hybrid",
+    # "segment_type" : "homophasal",
+    # "segment_type" : "hybrid",
+    "segment_type" : "linear",
+    
     "Noffres" : 3
 }
 
@@ -143,6 +145,9 @@ plt.show()
 
 all_dfs[title_str] = df
 
+
+
+# %% example measurement loop with values changed between iterations
 # # %%
 # num_msmts = 10
 # for idx in range(num_msmts):
@@ -166,7 +171,7 @@ all_dfs[title_str] = df
 
 
 
-# %%
+# %% plot all data taken into individual figure
 
 for key, df in all_dfs.items():
     freqs, magn_dB, phase_rad = unpack_df(df)
@@ -175,7 +180,7 @@ for key, df in all_dfs.items():
 fig.tight_layout()
     
 
-# %%
+# %% plot all data into one figure
 
 fig, axes = plt.subplots(len(all_dfs), 1, figsize=(6, 32))
 for (key, df), ax in zip(all_dfs.items(), axes):
@@ -188,6 +193,4 @@ for (key, df), ax in zip(all_dfs.items(), axes):
     
 fig.tight_layout()
     
-
-# %% run with scresonators
 
