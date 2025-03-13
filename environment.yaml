@@ -23,4 +23,3 @@ dependencies:
   - tabulate
   - varname
   - zeroconf
-prefix: /Users/jlr7/miniforge3/envs/bcqt-ctrl
