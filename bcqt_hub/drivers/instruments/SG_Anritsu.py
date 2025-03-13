@@ -152,8 +152,7 @@ if __name__ == '__main__':
     
     Anritsu_InstrConfig = {
         "instrument_name" : "TEST_ANRITSU",
-        # "rm_backend" : None,
-        "rm_backend" : "@py",
+        "rm_backend" : None,
         "amplitude" : 0,
         # "instr_address" : "192.168.0.100",
         # "instr_address" : 'GPIB::8::INSTR',  # test instr
