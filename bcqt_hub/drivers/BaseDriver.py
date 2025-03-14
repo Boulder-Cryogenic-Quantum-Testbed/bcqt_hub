@@ -25,12 +25,11 @@ class BaseDriver():
             
         # Open the pyvisa resource manager 
         self.open_pyvisa_backend()
+        
+        # now connect to instrument
         self.open_pyvisa_resource()
         
-        # now connect to instrument using address
-          
         # full reset of the instrument, write manually without checking
-
         # self.write_check("*CLS")    # clears status register and error queue of instrument
         # self.write_check("*RST")    # resets to factory default state
         # self.write_check("*ESE 1")  # resets the event status registry for *ESR? loops 
@@ -40,7 +39,7 @@ class BaseDriver():
         self.model, self.model_no, _, _ = self.idn.split(",")
         
         # set all defaults and announce identity
-        self.set_default_attrs(**kwargs)
+        # self.set_default_attrs(**kwargs)
         self.print_console(f"Resource successfully opened for [{self.instrument_name}]")
         self.print_debug(self.idn)
         

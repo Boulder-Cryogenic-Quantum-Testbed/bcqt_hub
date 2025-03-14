@@ -1,4 +1,5 @@
-from BaseDriver import BaseDriver
+from bcqt_hub.drivers.BaseDriver import BaseDriver
+
 
 import math, copy
 
@@ -9,7 +10,6 @@ import math, copy
 
     however, that is for the older E3631A. Here is the manual for the new E36311A we have -
         https://www.keysight.com/us/en/assets/9921-01393/programming-guides/EDU36311A-DC-Power-Supply-Programming-Guide.pdf
-
 
 """
 
@@ -58,82 +58,51 @@ _SUPPLY_RESOLVED_DIGITS = 4
 
 
 class PSU_Keysight_E36311A(BaseDriver):
+
+    
     """ This is a class that acts as a control for the 
     Keysight_E3631A power supply.
-
+    
         Attributes
         ----------
-            CH1_voltage : property(float)
-                The attribute that controls the CH1 output voltage on the 
+        --> # = channel 1, 2, or 3
+            CH#_voltage : property(float)
+                The attribute that controls the CH# output voltage on the 
                 power supply.
-            CH1_current : property(float)
-                The attribute that controls the CH1 output current on the 
-                power supply.
-            CH2_voltage : property(float)
-                The attribute that controls the CH2 output voltage on the 
-                power supply.
-            CH2_current : property(float)
-                The attribute that controls the CH2 output current on the 
-                power supply.
-            N25V_voltage : property(float)
-                The attribute that controls the N25V output voltage on the 
-                power supply.
-            N25V_current : property(float)
-                The attribute that controls the N25V output current on the 
+            CH#_current : property(float)
+                The attribute that controls the CH# output current on the 
                 power supply.
 
-            MIN_CH1_VOLTAGE : float
-                The minimum instance limitation for CH1 voltages.
-            MAX_CH1_VOLTAGE : float
-                The maximum instance limitation for CH1 voltages.
-            MIN_CH2_VOLTAGE : float
-                The minimum instance limitation for CH2 voltages.
-            MAX_CH2_VOLTAGE : float
-                The maximum instance limitation for CH2 voltages.
-            MIN_N25V_VOLTAGE : float
-                The minimum instance limitation for N25V voltages.
-            MAX_N25V_VOLTAGE : float
-                The maximum instance limitation for N25V voltages.
+            MIN_CH#_VOLTAGE : float
+                The minimum instance limitation for CH# voltages.
+            MAX_CH#_VOLTAGE : float
+                The maximum instance limitation for CH# voltages.
 
-            MIN_CH1_CURRENT : float
-                The minimum instance limitation for CH1 currents.
-            MAX_CH1_CURRENT : float
-                The maximum instance limitation for CH1 currents.
-            MIN_CH2_CURRENT : float
-                The minimum instance limitation for CH2 currents.
-            MAX_CH2_CURRENT : float
-                The maximum instance limitation for CH2 currents.
-            MIN_N25V_CURRENT : float
-                The minimum instance limitation for N25V currents.
-            MAX_N25V_CURRENT : float
-                The maximum instance limitation for N25V currents.
-
-            local : function
-                Alias to `Keysight_E3631A.local_mode()`
-            remote : function
-                Alias to `Keysight_E3631A.remote_mode()`
-            command, send, write : function
-                Aliases to `Keysight_E3631A.send_scpi_command()`
-            _raw, _send_raw : function
-                Aliases to `_send_raw_scpi_command()`
+            MIN_CH#_CURRENT : float
+                The minimum instance limitation for CH# currents.
+            MAX_CH#_CURRENT : float
+                The maximum instance limitation for CH# currents.
+                
     """
 
     # Internal implementation values.
     _CH1_voltage = float()
-    _CH2_voltage = float()
-    _N25V_voltage = float()
     _CH1_current = float()
+    
+    _CH2_voltage = float()
     _CH2_current = float()
     
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~  Abstract BaseDriver Methods  ~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    _CH3_voltage = float()
+    _CH3_current = float()
+    
+    # TODO: combine with verify_current_value, by just using if/else statements 
+    #           and working with 'min_factory/max_factory' and 'min_user/max_user'
+    
 
-    # run all required abstract methods, and if we don't
-    # want to change the original method in BaseDriver,
-    # just call it using the super() function
+    #############################################################
+    ###############  Abstract BaseDriver Methods  ###############
+    #############################################################
+    
     
     def __init__(self, InstrConfig_Dict, instr_resource=None, instr_address=None, debug=False, **kwargs):
         super().__init__(InstrConfig_Dict, instr_resource, instr_address, debug, **kwargs)
@@ -152,62 +121,30 @@ class PSU_Keysight_E36311A(BaseDriver):
     
     def return_instrument_parameters(self, print_output=False):
         return super().return_instrument_parameters(print_output)
-            
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~  Instr Parameters  ~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~    Just getters and setters!!  ~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+    #############################################################
+    #####################  Instr Parameters  ####################
+    #############################################################
+    #############    Just getters and setters!!  ################
+    #############################################################
     
-    # should begin with "get" or "set" so that other
-    #   methods can find them easily, for example, 
-    #   the `return_instrument_parameters` method 
-    #   iterating and calling all "get_" methods
-
-
-
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~   Instr Methods   ~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~    single responsibility methods; if  ~~~~
-    # ~~~    you try to describe its purpose    ~~~~
-    # ~~~    it must not use the word "and"!    ~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    # Sends a beep command.
-    def beep(self):
-        """ Sends a beep command to the power supply.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        responce : string
-            The responce from the power supply.
-        """
-        # The beep scpi command.
-        beep_command = 'SYSTem:BEEPer:IMMediate'
-        # Sending the beep command.
-        responce = self.send_scpi_command(command=beep_command)
-        # All done.
-        return responce
-
-
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~   Instr Routines   ~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~  a routine is made of several single  ~~~~
-    # ~~~  single-responsibility methods, but   ~~~~
-    # ~~~  still be as light as possible!       ~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    #########################  voltage  #########################
+    def get_output(self, channel):
+        
+        return reported_status
+    
+    
+    def set_output(self, channel, output):
+        
+        return None
+    
+    
+    
+    
+    #############################################################
+    #########################  Voltage  #########################
+    #############################################################
     
     def get_channel_voltage(self, channel):
         """ 
@@ -232,11 +169,11 @@ class PSU_Keysight_E36311A(BaseDriver):
         reported_voltage = float(volt)
         
         if ch_str == "ch1":
-            saved_voltage = self._ch1_voltage
+            saved_voltage = self.CH1_VOLTAGE
         elif ch_str == "ch2":
-            saved_voltage = self._ch2_voltage
+            saved_voltage = self.CH2_VOLTAGE
         elif ch_str == "ch3":
-            saved_voltage = self._ch3_voltage
+            saved_voltage = self.CH3_VOLTAGE
         
         # Double check that the two voltages are the same.
         assert_bool = math.isclose(reported_voltage, saved_voltage)
@@ -253,6 +190,7 @@ class PSU_Keysight_E36311A(BaseDriver):
         
         return reported_voltage
 
+
     def set_channel_voltage(self, channel, voltage):
         """ 
             Sets the voltage of the power supply at the given channel. 
@@ -264,19 +202,19 @@ class PSU_Keysight_E36311A(BaseDriver):
         
         # will raise a ValueError if voltage falls outside the 
         # factory or user defined min/maxes
-        self.verify_voltage_value(ch_str, voltage)  
+        assert self.verify_voltage_value(ch_str, voltage)  
         
         voltage = round(voltage, _SUPPLY_RESOLVED_DIGITS)
         
         if ch_str == "ch1":
-            self._CH1_voltage = voltage
-            current = self._CH1_current
+            self.CH1_VOLTAGE = voltage
+            current = self.CH1_CURRENT
         elif channel == "ch2":
-            self._CH2_voltage = voltage
-            current = self._CH2_current
+            self.CH2_VOLTAGE = voltage
+            current = self.CH2_CURRENT
         elif channel == "ch3":
-            self._CH3_voltage = voltage
-            current = self._CH3_current
+            self.CH3_VOLTAGE = voltage
+            current = self.CH3_CURRENT
         
         # Send the command to the power supply.
         command = self._generate_apply_command(
@@ -287,8 +225,6 @@ class PSU_Keysight_E36311A(BaseDriver):
         
         return None
     
-    # TODO: combine with verify_current_value, by just using if/else statements 
-    #           and working with 'min_factory/max_factory' and 'min_user/max_user'
     
     def verify_voltage_value(self, channel, voltage):
         
@@ -334,8 +270,13 @@ class PSU_Keysight_E36311A(BaseDriver):
                              .format(ch_str=ch_str, volt=voltage, 
                                      min=min_user_voltage, max=max_user_voltage))
         
+        # if we make it here, we have successfully 
+        # validated the voltage value
+        return True
     
-    #########################  current  #########################
+    #############################################################
+    #########################  Current  #########################
+    #############################################################
 
     def get_channel_current(self, channel):
         """ 
@@ -361,11 +302,11 @@ class PSU_Keysight_E36311A(BaseDriver):
         
         # change to dict?
         if ch_str == "ch1":
-            saved_current = self._ch1_current
+            saved_current = self.CH1_CURRENT
         elif ch_str == "ch2":
-            saved_current = self._ch2_current
+            saved_current = self.CH2_CURRENT
         elif ch_str == "ch3":
-            saved_current = self._ch3_current
+            saved_current = self.CH3_CURRENT
         
         
         # Double check that the two current are the same.
@@ -385,8 +326,6 @@ class PSU_Keysight_E36311A(BaseDriver):
         return reported_current
 
 
-    
-    
     def set_channel_current(self, channel, current):
         """ 
             Sets the current of the power supply. Checks exist to 
@@ -403,14 +342,14 @@ class PSU_Keysight_E36311A(BaseDriver):
         
         # save current into object, get voltage value for cmd
         if ch_str == "ch1":
-            self._CH1_current = current
-            voltage = self._CH1_voltage
+            self.CH1_CURRENT = current
+            voltage = self.CH1_VOLTAGE
         elif channel == "ch2":
-            self._CH2_current = current
-            voltage = self._CH2_voltage
+            self.CH2_CURRENT = current
+            voltage = self.CH2_VOLTAGE
         elif channel == "ch3":
-            self._CH3_current = current
-            voltage = self._CH3_voltage
+            self.CH3_CURRENT = current
+            voltage = self.CH3_VOLTAGE
             
         # Send the command to the power supply.
         command = self._generate_apply_command(
@@ -420,9 +359,7 @@ class PSU_Keysight_E36311A(BaseDriver):
         __ = self.send_scpi_command(command=command)
         
         return None
-    
-    # TODO: combine with verify_current_value, by just using if/else statements 
-    #           and working with 'min_factory/max_factory' and 'min_user/max_user'
+
 
     def verify_current_value(self, channel, current):
         
@@ -468,8 +405,14 @@ class PSU_Keysight_E36311A(BaseDriver):
                              .format(curr=current, min=min_user_current, 
                                                    max=max_user_current))
         
-        # if we get to this point, the value provided is valid, no errors raised
+        # if we make it here, we have successfully 
+        # validated the current value
+        return True
         
+    # #############################################################
+    # ####################   Instr Helpers   ######################
+    # #############################################################
+    
     def convert_channel_value_to_str(self, channel):
         # if "channel" is int or float, format into string
         # if "channel" is string, check if it matches 'ch#'
@@ -490,11 +433,6 @@ class PSU_Keysight_E36311A(BaseDriver):
         return ch_str
     
     
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~   Instr Helpers   ~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    # Used to create a SCPI command for all the channels identically
     def _generate_apply_command(self, channel, voltage, current,
                                 request=False):
         """ This is just a wrapper function to spit out a string
@@ -503,10 +441,10 @@ class PSU_Keysight_E36311A(BaseDriver):
         
         ch_str = self.convert_channel_value_to_str(channel)
         
-        # The voltages and currents should be strings. 
+        # Parameters 'voltage' and 'current' should be strings. 
         # If the parameter 'DEF', 'MIN', or 'MAX' is used, use that instead.
         
-        # Voltage
+        #### Voltage ####
         if ((str(voltage).upper() in ('','DEF','MIN','MAX')) or 
             (voltage is None)):
             voltage = '' if (voltage is None) else voltage  # leave blank if not changing
@@ -514,7 +452,7 @@ class PSU_Keysight_E36311A(BaseDriver):
         else:
             voltage_str = '{:6f}'.format(float(voltage))
             
-        # Current
+        #### Current ####
         if ((str(current).upper() in ('','DEF','MIN','MAX')) or 
             (current is None)):
             current = '' if (current is None) else current  # leave blank if not changing
@@ -523,7 +461,7 @@ class PSU_Keysight_E36311A(BaseDriver):
             current_str = '{:6f}'.format(float(current))
 
         # perform query if request is True, else just write
-        if (request):    
+        if request is True:    
             apply_command = ('APPLy? {out}'.format(out=ch_str))
         else:  
             apply_command = ('APPLy {out},{volt},{curr}'
@@ -531,3 +469,44 @@ class PSU_Keysight_E36311A(BaseDriver):
                                      volt=voltage_str, 
                                      curr=current_str))
         return apply_command
+    
+    
+    def beep(self):
+        """ Sends a beep command to the power supply.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        response : string
+            The response from the power supply.
+        """
+        # The beep scpi command.
+        beep_command = 'SYSTem:BEEPer:IMMediate'
+        # Sending the beep command.
+        response = self.send_scpi_command(command=beep_command)
+        # All done.
+        return response
+    
+    
+    
+if __name__ == "__main__":
+    print("Test")
+    
+    PSU_Keysight_InstrConfig = {
+        "instrument_name" : "PSU_Test",
+        "rm_backend" : None,
+        "instr_address" : "192.168.0.105",
+        
+    }
+    
+    PSU_Keysight = PSU_Keysight_E36311A()
+    
+    pass
+    
+    
+    
+    
+    
