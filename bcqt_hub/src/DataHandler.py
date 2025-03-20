@@ -43,12 +43,15 @@ class DataSet():
     #     if "configs" in kwargs:
     #         self.add_configs(kwargs["configs"])
     
-    def __init__(self, csv_path):
+    def __init__(self, csv_path=None, data_frame=None):
         """
 
         """
-        self.data = self.load_csv(csv_path)
-        self.file_name = csv_path
+        if csv_path == None and isinstance(data_frame, pd.DataFrame):
+            self.data = data_frame
+        elif isinstance(csv_path, Path)  and data_frame == None:
+            self.data = self.load_csv(csv_path)
+            self.file_name = csv_path
         
     
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
@@ -303,16 +306,17 @@ class DataHandler(UserDict):
             self.save_array(value)
 
     # Private function
-    def __convert_array_into_pandas(self, idx, column_name):
+    def __convert_array_into_dataset(self, idx, column_name):
         value = self[idx]
         # display(value)
         if isinstance(value, list) is True:
-            self[idx] = pd.DataFrame(value, columns=[column_name])
+            temp_frame = pd.DataFrame(value, columns=[column_name])
+            self[idx] = DataSet(None, temp_frame)
 
     # Private function 
     def __join_inner_dataframes_for_array(self, list_of_idx:list):
         smallest_value = min(list_of_idx)
-        list_of_relevant_dataframes = [value for idx, value in self.items()]
+        list_of_relevant_dataframes = [value.data for idx, value in self.items()]
         # Check if each relevant dataframe is only size one (indicating that they were made from 
             # an array/np_array)
         for dframe in list_of_relevant_dataframes:
@@ -320,7 +324,8 @@ class DataHandler(UserDict):
                 display(f"You tried to append an array to an already existing dataframe")
                 return
 
-        self[smallest_value] = pd.concat(list_of_relevant_dataframes, axis=1)
+        temp_frame = pd.concat(list_of_relevant_dataframes, axis=1)
+        self[smallest_value] = DataSet(None, temp_frame)
         for index in list_of_idx:
             if index is not smallest_value:
                 self.pop(index)
@@ -334,10 +339,7 @@ class DataHandler(UserDict):
         list_of_idx = []
         for idx, value in self.items():
             if isinstance(value, list) is True:
-                # display(idx)
-                # display(column_name_list[column_key])
-
-                self.__convert_array_into_pandas(idx, column_name_list[column_key])
+                self.__convert_array_into_dataset(idx, column_name_list[column_key])
                 list_of_idx.append(idx)
                 column_key += 1
         
@@ -521,44 +523,44 @@ if __name__ == "__main__":
     
     
 #%%
-"""Testing for myself on my local device"""
+# """Testing for myself on my local device"""
 
-SA_RnS_InstrConfig = {
-    "instrument_name" : "SA_RnS",
-    "rm_backend" : None,
-    "instr_address" : 'GPIB::20::INSTR',      
-}
+# SA_RnS_InstrConfig = {
+#     "instrument_name" : "SA_RnS",
+#     "rm_backend" : None,
+#     "instr_address" : 'GPIB::20::INSTR',      
+# }
 
-SG_Anritsu_InstrConfig = {
-    "instrument_name" : "SG_Anritsu",
-    "rm_backend" : None,
-    "instr_address" : 'GPIB::8::INSTR',  # 3691A  (as of 3/13/25)
-    # "instr_address" : 'GPIB::9::INSTR',  # 3692C
-}
+# SG_Anritsu_InstrConfig = {
+#     "instrument_name" : "SG_Anritsu",
+#     "rm_backend" : None,
+#     "instr_address" : 'GPIB::8::INSTR',  # 3691A  (as of 3/13/25)
+#     # "instr_address" : 'GPIB::9::INSTR',  # 3692C
+# }
 
-"""
-    data archiving
+# """
+#     data archiving
 
-"""
-archiver = DataHandler()
-archiver.append_metadata(SA_RnS_InstrConfig)
-archiver.append_metadata(SG_Anritsu_InstrConfig)
+# """
+# archiver = DataHandler()
+# archiver.append_metadata(SA_RnS_InstrConfig)
+# archiver.append_metadata(SG_Anritsu_InstrConfig)
 
-# from pathlib import Path
-# cur_dir = Path("./test_exp")
-# archiver.create_metadata_file(cur_dir)
+# # from pathlib import Path
+# # cur_dir = Path("./test_exp")
+# # archiver.create_metadata_file(cur_dir)
 
-traceData = [2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9]
-freqs = np.linspace(3/2, 5, len(traceData))
-# display(traceData)
-# display(freqs)
+# traceData = [2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9]
+# freqs = np.linspace(3/2, 5, len(traceData))
+# # display(traceData)
+# # display(freqs)
 
-list_of_arrays = [traceData, freqs]
-column_names = ['Frequency', 'Power']
+# list_of_arrays = [traceData, freqs]
+# column_names = ['Frequency', 'Power']
 
-archiver.convert_arrays_to_dataframes(list_of_arrays, column_names)
+# archiver.convert_arrays_to_dataframes(list_of_arrays, column_names)
 
-archiver.export_data("testing")
+# archiver.export_data("testing")
 
-display(archiver)
+# display(archiver)
 # archiver.save_array(traceData)

@@ -39,7 +39,7 @@ SG_Anritsu_InstrConfig = {
 # %%
 
 print("\n~~ Initializing test of SA with SG connected directly ~~")
-time.sleep(0.5)
+# time.sleep(0.5)
 
 print("\n~~ Initializing SG ~~")
 time.sleep(0.5)
@@ -95,7 +95,7 @@ test_SA.check_instr_error_queue(print_output=True)
 # %%
 # test_SA.query_check("*OPC?")
 # result = test_SA.query_check("*ESR?")
-display(result)
+# display(result)
 
 # %%
 
@@ -118,16 +118,17 @@ display(test_SA.return_instrument_parameters())
     data archiving
 
 """
+# Check if data is consistent 
 archiver = DataHandler()
 archiver.append_metadata(SA_RnS_InstrConfig)
 archiver.append_metadata(SG_Anritsu_InstrConfig)
 
 from pathlib import Path
 cur_dir = Path("./SA_SG_test_experiments")
-archiver.create_metadata_file(cur_dir)
+# archiver.create_metadata_file(cur_dir)
 
-archiver.save_array(freqs)
-archiver.save_array(traceData)
+archiver.convert_arrays_to_dataframes([freqs, traceData], ['Hz', 'dBm']) # Check the units for this data frame
+archiver.export_data("SA_SG")
 
 # %%
 
