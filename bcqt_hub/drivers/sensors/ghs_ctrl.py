@@ -28,6 +28,8 @@ import socket, time
 from datetime import datetime
 from pathlib import Path
 
+
+### TODO: fix imports
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 
 import bcqt_hub.experiments.quick_helpers as qh
@@ -44,10 +46,16 @@ class GHS_Controller():
                 
     """
     
+    
+    ### TODO: fix this garbage initialization
+        #  - remove bypass entirely? idk it was helpful for when the code broke, since 
+        # if a connection failed then it couldnt measure
     def __init__(self, TCP_IP='192.168.0.111', TCP_PORT='5559',  VNA_IP='TCPIP0::192.168.0.105::inst0::INSTR', init_socket=True, bypass_janis=False, verbose=True):
+        
         # default IP addresses and ports, as well as init_socket
         #      which allows the user to init without connecting
-        # TODO: grab these parametersfrom bcqt_instruments.json
+        # TODO: grab these parameters from bcqt_instruments.json
+        
         self.TCP_IP = TCP_IP  
         self.TCP_PORT = int(TCP_PORT)
         self.VNA_IP = VNA_IP
@@ -243,72 +251,72 @@ class GHS_Controller():
 
 
 
-    def get_heater_rng_lvl(self, x):
-        """
-            This function takes the pid output (Current in mA) and
-            converts it to heater settings. Used in set_mxc_current
-        """
-        if abs(x - 0) < 1e-8:
-            Range = 0
-            level = 0
-        elif x < 0.0316:
-            Range = 1
-            level = x*100/0.0316
-        elif 0.0316 < x <= 0.1:
-            Range = 2
-            level = x*100/0.1
-        elif 0.1 < x <= 0.316:
-            Range = 3
-            level = x*100/0.316
-        elif 0.316 < x <= 1.0:
-            Range = 4
-            level = x*100/1.0
-        elif 1.0 < x <= 3.16:
-            Range = 5
-            level = x*100/3.16
-        # Extended ranges added on 211111
-        elif 3.16 < x <= 10:
-            Range = 6
-            level = x*100/10
-        elif 10 < x <= 31.6:
-            Range = 7
-            level = x*100/31.6
-        elif 31.6 < x <= 100:
-            Range = 8
-            level = x*100/100
-        else:
-            self.print_console("DON'T MELT THE FRIDGE")
-            Range = 0
-            level = 0
-        return Range, level
+    # def get_heater_rng_lvl(self, x):
+    #     """
+    #         This function takes the pid output (Current in mA) and
+    #         converts it to heater settings. Used in set_mxc_current
+    #     """
+    #     if abs(x - 0) < 1e-8:
+    #         Range = 0
+    #         level = 0
+    #     elif x < 0.0316:
+    #         Range = 1
+    #         level = x*100/0.0316
+    #     elif 0.0316 < x <= 0.1:
+    #         Range = 2
+    #         level = x*100/0.1
+    #     elif 0.1 < x <= 0.316:
+    #         Range = 3
+    #         level = x*100/0.316
+    #     elif 0.316 < x <= 1.0:
+    #         Range = 4
+    #         level = x*100/1.0
+    #     elif 1.0 < x <= 3.16:
+    #         Range = 5
+    #         level = x*100/3.16
+    #     # Extended ranges added on 211111
+    #     elif 3.16 < x <= 10:
+    #         Range = 6
+    #         level = x*100/10
+    #     elif 10 < x <= 31.6:
+    #         Range = 7
+    #         level = x*100/31.6
+    #     elif 31.6 < x <= 100:
+    #         Range = 8
+    #         level = x*100/100
+    #     else:
+    #         self.print_console("DON'T MELT THE FRIDGE")
+    #         Range = 0
+    #         level = 0
+    #     return Range, level
     
-    # TODO: handle output from these cmds
-    def set_mxc_current(self, current_mA):
-        """
-            Uses self.get_heater_rng_lvl to convert
-                current_mA to percentage output
+    # # TODO: handle output from these cmds
+    # def set_mxc_current(self, current_mA):
+    #     """
+    #         Uses self.get_heater_rng_lvl to convert
+    #             current_mA to percentage output
                 
-            [Jorge] note, changed the first parameter from 
-                1 (HW PID) to 3 (Open Loop). I dont intend
-                to use PID control in the near future
-        """
-        Range, level = self.get_heater_rng_lvl(current_mA)
-        self.tcp_send(f'setHtrCntrlModeOpenLoop(3,{level},{Range})')
-        _ = self.tcp_recv()  
+    #         [Jorge] note, changed the first parameter from 
+    #             1 (HW PID) to 3 (Open Loop). I dont intend
+    #             to use PID control in the near future
+    #     """
+    #     Range, level = self.get_heater_rng_lvl(current_mA)
+    #     self.tcp_send(f'setHtrCntrlModeOpenLoop(3,{level},{Range})')
+    #     _ = self.tcp_recv()  
 
-    def set_still_heater_voltage(self, voltage):
-        """
-            Sets the still heater voltage
-        """
-        # Check that the voltage is zero
-        if voltage < 1e-6:
-            self.print_console('Turning off still heater')
-            self.tcp_send(f'setHtrCntrlModeOpenLoop(2, 0, 0)')
-            _ = self.tcp_recv()
-        else:
-            self.print_console(f'Turning on still heater with {voltage} V ...')
-            self.tcp_send(f'setHtrCntrlModeOpenLoop(2, {voltage}, {max(voltage, 3)})')
-            _ = self.tcp_recv()
+    # def set_still_heater_voltage(self, voltage):
+    #     """
+    #         Sets the still heater voltage
+    #     """
+    #     # Check that the voltage is zero
+    #     if voltage < 1e-6:
+    #         self.print_console('Turning off still heater')
+    #         self.tcp_send(f'setHtrCntrlModeOpenLoop(2, 0, 0)')
+    #         _ = self.tcp_recv()
+    #     else:
+    #         self.print_console(f'Turning on still heater with {voltage} V ...')
+    #         self.tcp_send(f'setHtrCntrlModeOpenLoop(2, {voltage}, {max(voltage, 3)})')
+    #         _ = self.tcp_recv()
 
 
     # TODO: read GHS_Manual in the bcqt google drive, and look through the interestin
