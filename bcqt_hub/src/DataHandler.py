@@ -384,43 +384,10 @@ class DataHandler(UserDict):
 
 # %%
 
-# TODO (2/18/2025)
-    # Save data
-        # Let datahandler accept pandasframe, list/array
-        # Export/Saves the data into a csv
-    # Recursion
-    # Make DataHandler into a UserDict
-
-# TODO (2/25/2025)
-    # Work on save/export data
-        # Look in quick_helpers at archive_data for inspiration
-        # Want to have the metadata file dictate what the file names are
-
-    # Bug with how it handles files that are represented with some multiple of .33 since floating point representation
-        # Example: TWPA_Calibration_7908MHz_-15.33dBm_OFF\TWPA_Calibration_7908MHz_-15.33dBm_OFF_001.csv
-            # Gets turned into TWPA_Calibration_7908MHz_-15.333333333333334dBm_OFF\TWPA_Calibration_7908MHz_-15.333333333333334dBm_OFF_001.csv
-    
-    # Implement two functions to exclude or include certain key phrases within filepath/etc.
-
-    # Start working on metadata file format (cleaning it up a lot) (GOAL: get 80% of it done)
-
-# TODO (3/4/2025)
-    # Put metadata into datahandler object
-        # Then be able to append (only) dicts to the metadata attribute
-            # Key: Instrument, Value: <configs>
-            # 
-            # getting name of vairable as a string
-        # Should be able to convert it to a json
 
 # Test Code for metadata
 if __name__ == "__main__":
     # Initializing
-    # dHandler = DataHandler()
-    # cur_dir = Path("./")
-    # test_csv = list(cur_dir.glob("*.csv"))[0]
-    # # print(test_csv)
-    # dHandler = DataHandler(test_csv)
-
     data_dir = Path("../../experiments/TWPA Calibration/data/cooldown59/Line6_SEG_PdAu_02/Line6_SEG_PdAu_02_01_21_0108PM_TWPA_Calibration")
     parent_data_dir = Path("../../experiments/TWPA Calibration/data/cooldown59/Line6_SEG_PdAu_02")
     assert data_dir.exists()
@@ -521,46 +488,3 @@ if __name__ == "__main__":
     #                               will just take itself out to the trash
     # TODO:                  can we incorporater the python tabulate module?
     
-    
-#%%
-# """Testing for myself on my local device"""
-
-# SA_RnS_InstrConfig = {
-#     "instrument_name" : "SA_RnS",
-#     "rm_backend" : None,
-#     "instr_address" : 'GPIB::20::INSTR',      
-# }
-
-# SG_Anritsu_InstrConfig = {
-#     "instrument_name" : "SG_Anritsu",
-#     "rm_backend" : None,
-#     "instr_address" : 'GPIB::8::INSTR',  # 3691A  (as of 3/13/25)
-#     # "instr_address" : 'GPIB::9::INSTR',  # 3692C
-# }
-
-# """
-#     data archiving
-
-# """
-# archiver = DataHandler()
-# archiver.append_metadata(SA_RnS_InstrConfig)
-# archiver.append_metadata(SG_Anritsu_InstrConfig)
-
-# # from pathlib import Path
-# # cur_dir = Path("./test_exp")
-# # archiver.create_metadata_file(cur_dir)
-
-# traceData = [2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9]
-# freqs = np.linspace(3/2, 5, len(traceData))
-# # display(traceData)
-# # display(freqs)
-
-# list_of_arrays = [traceData, freqs]
-# column_names = ['Frequency', 'Power']
-
-# archiver.convert_arrays_to_dataframes(list_of_arrays, column_names)
-
-# archiver.export_data("testing")
-
-# display(archiver)
-# archiver.save_array(traceData)
