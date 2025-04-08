@@ -30,12 +30,10 @@ from pathlib import Path
 
 
 ### TODO: fix imports
-sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
+import bcqt_hub
+from bcqt_hub.src.DataHandler import DataHandler, DataSet
 
-import bcqt_hub.experiments.quick_helpers as qh
-from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
-
-
+from bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 class GHS_Controller():
     """
@@ -50,7 +48,7 @@ class GHS_Controller():
     ### TODO: fix this garbage initialization
         #  - remove bypass entirely? idk it was helpful for when the code broke, since 
         # if a connection failed then it couldnt measure
-    def __init__(self, TCP_IP='192.168.0.111', TCP_PORT='5559',  VNA_IP='TCPIP0::192.168.0.105::inst0::INSTR', init_socket=True, bypass_janis=False, verbose=True):
+    def __init__(self, TCP_IP='192.168.0.103', TCP_PORT='5557',  VNA_IP='TCPIP0::192.168.0.105::inst0::INSTR', init_socket=True, bypass_janis=False, verbose=True):
         
         # default IP addresses and ports, as well as init_socket
         #      which allows the user to init without connecting
@@ -317,7 +315,6 @@ class GHS_Controller():
     #         self.print_console(f'Turning on still heater with {voltage} V ...')
     #         self.tcp_send(f'setHtrCntrlModeOpenLoop(2, {voltage}, {max(voltage, 3)})')
     #         _ = self.tcp_recv()
-
 
     # TODO: read GHS_Manual in the bcqt google drive, and look through the interestin
     #           cmds in section 10.3.3. Some that might be interesting are:
