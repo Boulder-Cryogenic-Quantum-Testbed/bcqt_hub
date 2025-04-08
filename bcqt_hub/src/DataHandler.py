@@ -49,29 +49,13 @@ class DataSet():
         """
         if csv_path == None and isinstance(data_frame, pd.DataFrame):
             self.data = data_frame
+            self.file_name = None
         elif isinstance(csv_path, Path)  and data_frame == None:
             self.data = self.load_csv(csv_path)
             self.file_name = csv_path
         
     
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-    
-    # def append_df(self, data_df, axis=1):
-    #     """ if a DataFrame is given, concat with existing """
-    #     self.data = pd.concat([self.data, data_df], axis=axis)
-    #     self.data.reset_index(drop=True, inplace=True)
-        
-    # def append_row_df(self, data_row):
-    #     self.append_df(data_row, axis=0)
-        
-    # def append_dict(self, data_dict):
-    #     """ if a dict is given, append to dataframe as a column or row """
-    #     data_df = pd.DataFrame.from_dict(data_dict)
-    #     self.append_df(data_df)
-            
-    # def append_array(self, data, label):
-    #     """ if an array is given, require a label and append to dataframe  """
-    #     self.append_dict( {label : data} )
 
     def load_csv(self, csv_path_string):
         if csv_path_string.suffix != ".csv":
@@ -83,32 +67,9 @@ class DataSet():
         return self.data
 
     def get_file_name(self):
-        return str(self.file_name.stem)
-    
-    #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-
-    # Make metadata editor if needed
-
-    # def display_metadata(self, print_output=False):
-    #     data, metadata = self.data, self.metadata
-    #     str_repr = f"label: {metadata["label"]}\n" + " "*11 + \
-    #                f"len(data) = {len(data)}\n" + " "*11 + \
-    #                f"units = {metadata["units"]}\n" + " "*11
-        
-    #     if print_output is True:
-    #         print(str_repr)
-    #     else:
-    #         return str_repr
-    
-    # def append_to_metadata(self, **kwargs):
-    
-    #     for key, val in kwargs.items():
-    #         if key in self.metadata:
-    #             self.print_datahandler(f"        [DataSet] Overwriting {key}={self.metadata[key]} with {key}={val}")
-    #         else:
-    #             print(f"Saving {key}={val}")
-    
-    #         self.metadata[key] = val
+        if self.file_name != None:
+            return str(self.file_name.stem)
+        return "There is no file name associated"
             
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
             
@@ -150,35 +111,13 @@ class DataHandler(UserDict):
         self.key = 0
         self.metadata = {}
 
-        """
-            we need to figure out what the keyword for each dataset should be
-            
-            dH = DataHandler(path)  # decide later whether path goes in init or load_dsets
-            dH.load_dsets()
-            
-            ***
-            
-            for key, dset in dH.items():
-                
-                print(key, dset)
-                
+        """     
             previous code
                 key is integer, to mimic enumerate()
                 but also keeps keys static when removing
                 an element
             
         """
-        
-        # FIX FOR LATER
-        # if path.is_dir() is True:
-        #     self.load_data_directory(self.path, {})
-        #     self.display_datasets()
-        #     # self.create_metadata_for_directory(self.path, {})
-        #     self.load_metadata_and_display(self.path)
-        # elif path.is_file() is True:
-        #     self.load_dataset(self.path, {})
-        #     self.display_datasets()
-        # if directory: create multiple dsets that load all csvs, then load json if it exists
         
         # if file: create on dset that loads a single csv
     def load_sets(self, path:Path, mdict:dict, overwrite_flag=False):
