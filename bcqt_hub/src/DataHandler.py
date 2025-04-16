@@ -17,32 +17,6 @@ class DataSet():
         Basically the DataSet is the book and the DataHandler is the bookshelf
     """
     
-    # def __init__(self, data, expt_name:str, meas_label:str, units:str, **kwargs):
-        
-    #     self.data = pd.DataFrame()
-        
-    #     """ check type of arg 'data', then use appropriate method """
-    #     if isinstance(data, pd.DataFrame):
-    #         self.append_df(data)
-    #     elif isinstance(data, np.ndarray) or isinstance(data, list):
-    #         self.append_array(data, meas_label)
-    #     else:
-    #         self.append_dict(data)
-        
-        
-    #     self.expt_name = expt_name
-    #     self.meas_label = meas_label
-        
-    #     self.metadata = {
-    #         "expt_name" : expt_name,
-    #         "label" : meas_label,
-    #         "units" : units,
-    #         "creation_time" : datetime.now(),
-    #     }
-        
-    #     if "configs" in kwargs:
-    #         self.add_configs(kwargs["configs"])
-    
     def __init__(self, csv_path=None, data_frame=None):
         """
 
@@ -311,6 +285,9 @@ class DataHandler(UserDict):
         filename = f"{measurement}_{expt_no:03d}.csv"
         final_path = file_dir / filename
         self.create_metadata_file(file_dir)
+
+        # NEED TO HAVE IT UPDATE THE final_path EVERYTIME it goes to a new DataSet in the DataHandler
+        # Maybe if that's what is intended?
         self.export_from_type_pandas(final_path)
 
         
