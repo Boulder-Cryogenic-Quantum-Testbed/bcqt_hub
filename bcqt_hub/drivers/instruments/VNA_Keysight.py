@@ -27,7 +27,7 @@ class VNA_Keysight(BaseDriver):
     def write_check(self, cmd: str):
         return super().write_check(cmd=cmd)
     
-    def query_check(self, cmd, fmt = str):
+    def query_check(self, cmd, fmt=str):
         return super().query_check(cmd, fmt)
     
     def check_instr_error_queue(self, print_output=False):
