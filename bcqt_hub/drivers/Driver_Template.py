@@ -16,13 +16,13 @@ class Example_Driver(BaseDriver):
     def __init__(self, InstrConfig_Dict, instr_resource=None, instr_address=None, debug=False, **kwargs):
         super().__init__(InstrConfig_Dict, instr_resource, instr_address, debug, **kwargs)
         
-    def read_check(self, fmt=...):
+    def read_check(self, fmt=str):
         return super().read_check(fmt)
     
     def write_check(self, cmd: str):
         return super().write_check(cmd=cmd)
     
-    def query_check(self, cmd, fmt=...):
+    def query_check(self, cmd, fmt=str):
         return super().query_check(cmd, fmt)
     
     def check_instr_error_queue(self, print_output=False):

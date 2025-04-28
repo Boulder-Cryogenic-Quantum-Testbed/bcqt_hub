@@ -9,16 +9,46 @@ class BaseDriver():
     def __init__(self, InstrConfig_Dict, instr_resource=None, instr_address=None, debug=False, **kwargs):
         """
             rm_backend = "@py" or None, depending on if using pyvisa or pyvisa-py
+            only provide one of instr_resource and instr_address!
         """
-        
         self.debug = debug
         self.configs = InstrConfig_Dict        
-        self.instrument_name = self.configs["instrument_name"].upper()
+        self.instrument_name = self.configs["instrument_name"].upper() if "instrument_name" in self.configs else "NoInstrumentName"
         self.rm_backend = self.configs["rm_backend"] if "rm_backend" in self.configs else None
+        
+        print(f"{instr_address is None=}")
+        print(f"{instr_resource is None=}")
+        
+        # first check if both are None
+        if instr_resource is None and instr_address is None:
+            self.print_warning("Both instr_resource and instr_address were not given- checking config dict for address")
+            
+            # check config dict
+            if "instr_addr" in InstrConfig_Dict:
+                self.instr_address = self.configs["instr_addr"]
+                self.instr_resource = None
+                self.print_debug(f"'instr_addr' found in config dict! {self.instr_address=}")
+            else:
+                self.print_debug("'instr_addr' not found in config dict!")
+                raise ValueError("'instr_addr' not found in config dict!")
+        
+        print(f"#1\n{self.instr_address is None=}")
+        print(f"{self.instr_resource is None=}")
 
-        # pick between address and resource
-        self.instr_address = self.configs["instr_address"] if "instr_address" in self.configs else None
-        self.instr_resource = self.configs["instr_resource"] if "instr_resource" in self.configs else None
+        # now check which one is None, save it, and set other to None
+        if instr_address is not None:
+            self.instr_resource = None
+            self.instr_address = instr_address
+            
+            print(f"#11\n{self.instr_address is None=}")
+            print(f"{self.instr_resource is None=}")
+
+        elif instr_resource is not None:
+            self.instr_resource = instr_resource
+            self.instr_address = None
+            print(f"#2\n{self.instr_address is None=}")
+            print(f"{self.instr_resource is None=}")
+            
 
         # if self.debug is True:
             # pyvisa.log_to_screen()
@@ -52,7 +82,7 @@ class BaseDriver():
         """
         Deconstructor to free resources
         """
-        if self.rm:
+        if hasattr(self, 'rm'):
             self.rm.close()
             
             
@@ -62,7 +92,7 @@ class BaseDriver():
     ##############  instrument operation  ##############
     ####################################################
     
-    def read_check(self, fmt = str):
+    def read_check(self, fmt=str):
         ret = self.resource.read()
         return fmt(ret)
     
@@ -70,7 +100,7 @@ class BaseDriver():
         self.resource.write(cmd)
         return 
     
-    def query_check(self, cmd, fmt = str):
+    def query_check(self, cmd, fmt=str):
         ret = self.resource.query(cmd)
         return fmt(ret)
     
@@ -269,7 +299,7 @@ class BaseDriver():
         elif self.instr_resource is not None and self.instr_address is None:
             self.print_console(f"open_pyvisa_resource() was called, but already found instrument resource? {self.instr_resource = }")
             resource = self.instr_resource
-            
+        
         else:
             raise ValueError(f"""
                              \n        Both input arguments "instr_resource" and "instr_address" are none, or both are not none. 

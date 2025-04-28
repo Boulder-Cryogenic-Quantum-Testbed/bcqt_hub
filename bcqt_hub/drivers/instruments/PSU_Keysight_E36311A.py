@@ -60,62 +60,16 @@ _SUPPLY_RESOLVED_DIGITS = 4
 class PSU_Keysight_E36311A(BaseDriver):
     """ This is a class that acts as a control for the 
     Keysight_E3631A power supply.
+    
+        The user should generally only need to use the
+    "get" and "set" methods, such as:
+    
+        - get_channel_current
+        - get_channel_voltage
+        - set_channel_current
+        - set_channel_voltage
+        - beep
 
-        Attributes
-        ----------
-            CH1_voltage : property(float)
-                The attribute that controls the CH1 output voltage on the 
-                power supply.
-            CH1_current : property(float)
-                The attribute that controls the CH1 output current on the 
-                power supply.
-            CH2_voltage : property(float)
-                The attribute that controls the CH2 output voltage on the 
-                power supply.
-            CH2_current : property(float)
-                The attribute that controls the CH2 output current on the 
-                power supply.
-            N25V_voltage : property(float)
-                The attribute that controls the N25V output voltage on the 
-                power supply.
-            N25V_current : property(float)
-                The attribute that controls the N25V output current on the 
-                power supply.
-
-            MIN_CH1_VOLTAGE : float
-                The minimum instance limitation for CH1 voltages.
-            MAX_CH1_VOLTAGE : float
-                The maximum instance limitation for CH1 voltages.
-            MIN_CH2_VOLTAGE : float
-                The minimum instance limitation for CH2 voltages.
-            MAX_CH2_VOLTAGE : float
-                The maximum instance limitation for CH2 voltages.
-            MIN_N25V_VOLTAGE : float
-                The minimum instance limitation for N25V voltages.
-            MAX_N25V_VOLTAGE : float
-                The maximum instance limitation for N25V voltages.
-
-            MIN_CH1_CURRENT : float
-                The minimum instance limitation for CH1 currents.
-            MAX_CH1_CURRENT : float
-                The maximum instance limitation for CH1 currents.
-            MIN_CH2_CURRENT : float
-                The minimum instance limitation for CH2 currents.
-            MAX_CH2_CURRENT : float
-                The maximum instance limitation for CH2 currents.
-            MIN_N25V_CURRENT : float
-                The minimum instance limitation for N25V currents.
-            MAX_N25V_CURRENT : float
-                The maximum instance limitation for N25V currents.
-
-            local : function
-                Alias to `Keysight_E3631A.local_mode()`
-            remote : function
-                Alias to `Keysight_E3631A.remote_mode()`
-            command, send, write : function
-                Aliases to `Keysight_E3631A.send_scpi_command()`
-            _raw, _send_raw : function
-                Aliases to `_send_raw_scpi_command()`
     """
 
     # Internal implementation values.
@@ -138,13 +92,13 @@ class PSU_Keysight_E36311A(BaseDriver):
     def __init__(self, InstrConfig_Dict, instr_resource=None, instr_address=None, debug=False, **kwargs):
         super().__init__(InstrConfig_Dict, instr_resource, instr_address, debug, **kwargs)
     
-    def read_check(self, fmt=...):
+    def read_check(self, fmt=str):
         return super().read_check(fmt)
     
     def write_check(self, cmd: str):
         return super().write_check(cmd=cmd)
     
-    def query_check(self, cmd, fmt=...):
+    def query_check(self, cmd, fmt=str):
         return super().query_check(cmd, fmt)
     
     def check_instr_error_queue(self, print_output=False):
@@ -153,6 +107,20 @@ class PSU_Keysight_E36311A(BaseDriver):
     def return_instrument_parameters(self, print_output=False):
         return super().return_instrument_parameters(print_output)
             
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~   Instr Methods   ~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~    single responsibility methods; if  ~~~~
+    # ~~~    you try to describe its purpose    ~~~~
+    # ~~~    it must not use the word "and"!    ~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    def ramp_voltage():
+        return
+    
+    def ramp_current():
+    
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ~~~~~~~~~~~~  Instr Parameters  ~~~~~~~~~~~~~~
@@ -168,14 +136,6 @@ class PSU_Keysight_E36311A(BaseDriver):
 
 
 
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~   Instr Methods   ~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~    single responsibility methods; if  ~~~~
-    # ~~~    you try to describe its purpose    ~~~~
-    # ~~~    it must not use the word "and"!    ~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     # Sends a beep command.
     def beep(self):
@@ -191,9 +151,9 @@ class PSU_Keysight_E36311A(BaseDriver):
             The responce from the power supply.
         """
         # The beep scpi command.
-        beep_command = 'SYSTem:BEEPer:IMMediate'
+        beep_cmd = 'SYSTem:BEEPer:IMMediate'
         # Sending the beep command.
-        responce = self.send_scpi_command(command=beep_command)
+        responce = self.write_check(cmd=beep_cmd)
         # All done.
         return responce
 
@@ -207,7 +167,9 @@ class PSU_Keysight_E36311A(BaseDriver):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
+    #############################################################
     #########################  voltage  #########################
+    #############################################################
     
     def get_channel_voltage(self, channel):
         """ 
@@ -221,11 +183,11 @@ class PSU_Keysight_E36311A(BaseDriver):
         ch_str = self.convert_channel_var_to_str(channel)
         
         # generate the appropriate command for given channel
-        request_command = self._generate_apply_command(
+        request_cmd = self._generate_apply_command(
             output=ch_str, voltage=None, current=None, request=True)
         
         # send command and read result
-        result = self.send_scpi_command(command=request_command)
+        result = self.query_check(cmd=request_cmd)
         
         volt, __ = result.split(',')
         volt = volt.strip('"')
@@ -279,11 +241,11 @@ class PSU_Keysight_E36311A(BaseDriver):
             current = self._CH3_current
         
         # Send the command to the power supply.
-        command = self._generate_apply_command(
+        cmd = self._generate_apply_command(
             output=ch_str, voltage=voltage, 
             current=current, request=False)
         
-        __ = self.send_scpi_command(command=command)
+        __ = self.write_check(cmd=cmd)
         
         return None
     
@@ -334,8 +296,11 @@ class PSU_Keysight_E36311A(BaseDriver):
                              .format(ch_str=ch_str, volt=voltage, 
                                      min=min_user_voltage, max=max_user_voltage))
         
-    
+        
+        
+    #############################################################
     #########################  current  #########################
+    #############################################################
 
     def get_channel_current(self, channel):
         """ 
@@ -349,11 +314,11 @@ class PSU_Keysight_E36311A(BaseDriver):
         ch_str = self.convert_channel_var_to_str(channel)
         
         # generate a query with appropriate channel
-        request_command = self._generate_apply_command(
+        request_cmd = self._generate_apply_command(
             output=ch_str, voltage=None, current=None, request=True)
         
         # send command and read result
-        result = self.send_scpi_command(command=request_command)
+        result = self.query_check(cmd=request_cmd)
         
         _, current = result.split(',')
         current = current.strip('"')
@@ -413,11 +378,11 @@ class PSU_Keysight_E36311A(BaseDriver):
             voltage = self._CH3_voltage
             
         # Send the command to the power supply.
-        command = self._generate_apply_command(
+        cmd = self._generate_apply_command(
             output=ch_str, voltage=voltage, 
             current=current, request=False)
         
-        __ = self.send_scpi_command(command=command)
+        __ = self.write_check(cmd=cmd)
         
         return None
     
@@ -470,6 +435,12 @@ class PSU_Keysight_E36311A(BaseDriver):
         
         # if we get to this point, the value provided is valid, no errors raised
         
+        
+        
+    #############################################################
+    #############################################################
+    #############################################################
+        
     def convert_channel_value_to_str(self, channel):
         # if "channel" is int or float, format into string
         # if "channel" is string, check if it matches 'ch#'
@@ -490,9 +461,9 @@ class PSU_Keysight_E36311A(BaseDriver):
         return ch_str
     
     
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~   Instr Helpers   ~~~~~~~~~~~~~~~
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #############################################################
+    #######################   Helpers   #########################
+    #############################################################
     
     # Used to create a SCPI command for all the channels identically
     def _generate_apply_command(self, channel, voltage, current,
@@ -524,10 +495,10 @@ class PSU_Keysight_E36311A(BaseDriver):
 
         # perform query if request is True, else just write
         if (request):    
-            apply_command = ('APPLy? {out}'.format(out=ch_str))
+            apply_cmd = ('APPLy? {out}'.format(out=ch_str))
         else:  
-            apply_command = ('APPLy {out},{volt},{curr}'
+            apply_cmd = ('APPLy {out},{volt},{curr}'
                              .format(out=ch_str, 
                                      volt=voltage_str, 
                                      curr=current_str))
-        return apply_command
+        return apply_cmd
