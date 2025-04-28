@@ -112,14 +112,17 @@ freqs = np.linspace(freqCenterHz - freqSpan / 2, freqCenterHz + freqSpan / 2, le
 
 display(SigGen.return_instrument_parameters())
 display(test_SA.return_instrument_parameters())
+
  # %%
 
 """
     data archiving
 
 """
+
+
 # Check if data is consistent 
-archiver = DataHandler()
+archiver = DataHandler()  
 archiver.append_metadata(SA_RnS_InstrConfig)
 archiver.append_metadata(SG_Anritsu_InstrConfig)
 
@@ -133,21 +136,45 @@ archiver.export_data("SA_SG")
 # %%
 
 from scipy.signal import find_peaks
-peaks, _ = find_peaks(traceData, prominence=10)
+def plot_peaks(traceData):
+    peaks, _ = find_peaks(traceData, prominence=10)
 
-fig, ax = plt.subplots(1, 1, figsize=(8,5))
-ax.plot(freqs, traceData, '.')
-for idx in peaks:
-    ax.plot(freqs[idx], traceData[idx], "o", fillstyle="none", markeredgewidth=2, markersize=10,
-             label=f"{freqs[idx]/1e6:1.2f} MHz")
+    fig, ax = plt.subplots(1, 1, figsize=(8,5))
+    ax.plot(freqs, traceData, '.')
+    for idx in peaks:
+        ax.plot(freqs[idx], traceData[idx], "o", fillstyle="none", markeredgewidth=2, markersize=10,
+                label=f"{freqs[idx]/1e6:1.2f} MHz")
+        
+    ax.set_title("Spectrum Analyzer Output")
+    fig.legend()
+
+    plt.show()
     
-ax.set_title("Spectrum Analyzer Output")
-fig.legend()
-
-plt.show()
+    return peaks, fig
 
 # %%
 # %%
 # *OPC? places a 1 on the output queue when operation is complete. *OPC raises 
 # bit 0 in the event status register when operation is complete. Both outputs are used for client synchronization.
 # For example, the client may wait until it receives 1 on the output queue from *OPC?
+
+# %%
+archiver2 = DataHandler()
+filepath = Path("data\\SA_SG\\SA_SG_001.csv")
+archiver2.load_dataset(filepath)
+archiver2
+
+data2 = archiver2[0].get_data()
+
+plot_peaks(data2["dBm"])
+
+# %%
+archiver3 = DataHandler()
+archiver3.load_data_from_directory(filepath.parent)
+archiver3
+
+data3 = archiver3[0].get_data()
+
+plot_peaks(data3["dBm"])
+
+
