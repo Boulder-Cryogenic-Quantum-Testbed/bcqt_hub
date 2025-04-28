@@ -59,12 +59,12 @@ VNA_Keysight_InstrConfig = {
     "segment_type" : "linear",
     # "segment_type" : "hybrid",
     
-    "f_start" : 5.5e9,
-    "f_stop" : 7.6e9,
+    "f_start" : 4.5e9,
+    "f_stop" : 5.0e9,
     # "f_center" : 6e9,
     # "f_span" : 3.5e9,
     
-    "edelay" : 73.19, 
+    "edelay" : 52.94, 
     
 }
 

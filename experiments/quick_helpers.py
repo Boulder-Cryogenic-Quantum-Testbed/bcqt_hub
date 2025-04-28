@@ -9,9 +9,10 @@ import scipy as sp
 from scipy.signal import find_peaks
 from datetime import datetime
 from pathlib import Path
-import sys
-sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub\bcqt_hub\experiments")
-import quick_helpers as qh
+import sys, time, datetime
+sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
+import bcqt_hub.experiments.quick_helpers as qh
+
 
 def find_resonators(s2p_df, fig_title="", find_peaks_kwargs={}, plot_phase = False):
     
@@ -64,7 +65,7 @@ def archive_data(VNA, s2p_df:pd.DataFrame, meas_name:str, expt_category:str = ''
     if not isinstance(save_dir, Path):
         save_dir = Path(save_dir).absolute()
         
-    timestamp = datetime.today().strftime("%m_%d_%H%M")
+    timestamp = datetime.datetime.today().strftime("%m_%d_%H%M")
     # file_dir = save_dir / expt_category / meas_name / timestamp
     file_dir = save_dir / expt_category / meas_name
     
@@ -85,13 +86,13 @@ def archive_data(VNA, s2p_df:pd.DataFrame, meas_name:str, expt_category:str = ''
     print(final_path.exists())
     s2p_df.to_csv(final_path)
     
-    if len(all_axes) != 0:
-        for ax in all_axes:
-            fig = ax.get_figure()
-            # title = fig.get_suptitle().replace(" - ","_") + f"{expt_no:03d}.png"
-            fig.tight_layout()
-            fig.savefig(f"{str(final_path).replace(".csv",".png")}", bbox_inches='tight')
-            plt.show()
+    # if len(all_axes) != 0:
+    #     for ax in all_axes:
+    #         fig = ax.get_figure()
+    #         # title = fig.get_suptitle().replace(" - ","_") + f"{expt_no:03d}.png"
+    #         fig.tight_layout()
+    #         fig.savefig(f"{str(final_path).replace('.csv','.png')}", bbox_inches='tight')
+    #         plt.show()
             
     
     return filename, final_path.parent
@@ -317,7 +318,7 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
     
     if track_min is True:
         new_freqs = (freqs - freq_min)/1e3
-        freq_min_label = f"$f_{"{min}"}$ = {freq_min/1e6:1.3f} MHz"
+        freq_min_label = f"$f_{'min'}$ = {freq_min/1e6:1.3f} MHz"
         ax1.axvline(0, linestyle='--', color='k', linewidth=1)
         ax2.axvline(0, linestyle='--', color='k', linewidth=1)
         if ax3 is not None:
@@ -325,8 +326,8 @@ def plot_data_with_pandas(freqs=None, magn_dB=None, axes=None, phase_deg=None, p
         fig.legend(loc="upper left")
         ax1.set_xlabel("Frequency $\\Delta f$ [MHz]")
         ax2.set_xlabel("Frequency $\\Delta f$ [MHz]")
-        ax1.set_title(f"Freq vs Magn [$f_{"{min}"}$ = {freq_min/1e9:1.6f} GHz]")
-        ax2.set_title(f"Freq vs Phase [$f_{"{min}"}$ = {freq_min/1e9:1.6f} GHz]")
+        ax1.set_title(f"Freq vs Magn [$f_{'{min}'}$ = {freq_min/1e9:1.6f} GHz]")
+        ax2.set_title(f"Freq vs Phase [$f_{'{min}'}$ = {freq_min/1e9:1.6f} GHz]")
     else:
         new_freqs = freqs
         ax1.set_xlabel("Frequency [GHz]")

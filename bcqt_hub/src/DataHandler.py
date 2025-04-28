@@ -7,7 +7,19 @@ from collections import UserDict
 from pathlib import Path
 from datetime import datetime
 
+"""
 
+    - print(DataHandler) behavior
+        -> when instantiated, perhaps have a default value? 
+                so when you print its not just {}
+        -> metadata not displayed when printed. maybe even
+                just printing length of metadata array
+        
+    - verbose argument
+        -> print to console when
+    
+
+"""
 class DataSet():
     """
         this class compartmentalizes just one set of data
@@ -17,16 +29,19 @@ class DataSet():
         Basically the DataSet is the book and the DataHandler is the bookshelf
     """
     
-    def __init__(self, csv_path=None, data_frame=None):
+    def __init__(self, csv_path=None, dataframe=None):
         """
 
         """
-        if csv_path == None and isinstance(data_frame, pd.DataFrame):
-            self.data = data_frame
-            self.file_name = None
-        elif isinstance(csv_path, Path)  and data_frame == None:
+        
+        if csv_path == None and isinstance(dataframe, pd.DataFrame):
+            self.data = dataframe
+            self.filename = None
+        elif isinstance(csv_path, Path) and dataframe == None:
             self.data = self.load_csv(csv_path)
-            self.file_name = csv_path
+            self.filepath = csv_path
+        else:
+            raise ValueError("Provide only one of csv_path and dataframe")
         
     
     #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
@@ -40,13 +55,13 @@ class DataSet():
     def get_data(self):
         return self.data
 
-    def get_file_name(self):
-        if self.file_name != None:
-            return str(self.file_name.stem)
-        return "There is no file name associated"
-            
-    #### ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ###
-            
+    def get_filename(self):
+        return str(self.filepath.stem)
+    
+    def get_filepath(self):
+        return str(self.filepath)
+    
+    
     def __str__(self):
         return f"DataSet -> {self.display_metadata()}"
     
@@ -85,35 +100,24 @@ class DataHandler(UserDict):
         self.key = 0
         self.metadata = {}
 
-        """     
-            previous code
-                key is integer, to mimic enumerate()
-                but also keeps keys static when removing
-                an element
-            
-        """
-        
-        # if file: create on dset that loads a single csv
     def load_sets(self, path:Path, mdict:dict, overwrite_flag=False):
-        
         # check if path is a directory or a single csv
         self.create_metadata_file_for_directory(path, mdict, overwrite_flag)
         self.load_data_directory_rec(path)
     
-        pass
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-# Loading directory/dataset into datahandler
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+    # Loading directory/dataset into datahandler
 
-    # Load a a directory containing csv objects into the datahandler recursively
-    def load_data_directory_rec(self, path:Path):
+    # Load a *directory* containing csv objects into the datahandler recursively
+    def load_data_from_directory(self, path:Path):
         list_of_file_or_directory = list(path.glob("*"))
         for file_or_dirctory in list_of_file_or_directory:
             if ".json" in str(file_or_dirctory):
                 # display(f"{file_or_dirctory}")
                 continue
             if file_or_dirctory.is_dir() is True:
-                self.load_data_directory_rec(file_or_dirctory)
+                self.load_data_from_directory(file_or_dirctory)
             elif file_or_dirctory.is_file() is True:
                 self.load_dataset(file_or_dirctory)
             else:
@@ -129,14 +133,20 @@ class DataHandler(UserDict):
     #     for file in data_dir_files:
     #         self.load_dataset(file, mdict)
     
+    
     # Load a singular dataset from a given path object
     def load_dataset(self, file_path: Path):
-        if isinstance(file_path, Path) is False :
-            raise TypeError("argument 'file_path' is not a Path object.")
+        if isinstance(file_path, Path) is False:
+            try: 
+                file_path = Path(file_path)
+            except Exception as E:
+                print("argument 'file_path' is not a Path object.")
+                raise E
         
         dset = self.create_dataset(file_path)
         self[self.key] = dset
         self.key += 1
+        
         
     def create_dataset(self, csv_path):
         dset = DataSet(csv_path)
@@ -151,7 +161,7 @@ class DataHandler(UserDict):
             # Uncomment the print if not using the juypter notebook and comment out the display
                 # print(value.head(number_of_rows))
             if isinstance(value, DataSet) is True:
-                display(value.get_file_name())
+                display(value.get_filename())
                 display(value.data.head(number_of_rows))
             else:
                 display(value)
@@ -166,6 +176,7 @@ class DataHandler(UserDict):
                 if mdict == None:
                     mdict = self.metadata
                 json.dump(mdict, json_file, indent=4)
+
 
     def create_metadata_file_for_directory(self, dir_path:Path, mdict:dict, overwrite_flag=False):
         current_json = list(dir_path.glob("*.json"))
@@ -182,14 +193,17 @@ class DataHandler(UserDict):
         else:
             display("Json file already exists")
 
+
     def read_metadata(self, dir_path):
         with open(dir_path / "metadata.json", 'r', encoding='utf8') as json_file:
                 metadata = json.load(json_file)
         return metadata
+    
 
     def append_metadata(self, dict_to_add:dict, backframe=1, str_dict:str = 'dict_to_add'):
         # display(argname('dict_to_add'))
         self.metadata.update({argname(f"{str_dict}", frame=backframe):dict_to_add})
+
 
         # NEED TO TEST 
     def load_metadata_and_display(self, dir_path:Path):
@@ -204,8 +218,8 @@ class DataHandler(UserDict):
         else:
             display("There is more than one metadata file, please check")
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-# Saving data to datahandler
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+    # Saving data to datahandler
 
     def save_array(self, arr:list):
         if isinstance(arr, np.ndarray) is True:
@@ -259,10 +273,10 @@ class DataHandler(UserDict):
         self.__join_inner_dataframes_for_array(list_of_idx)
         pass
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
-# Exporting data from datahandler
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+    # Exporting data from datahandler
 
-    def export_from_type_pandas(self, path:Path):
+    def __export_from_type_pandas(self, path:Path):
         for idx, value in self.items():
             if isinstance(value, DataSet) or isinstance(value, pd.DataFrame):
                 if isinstance(value, DataSet):
@@ -285,18 +299,17 @@ class DataHandler(UserDict):
         filename = f"{measurement}_{expt_no:03d}.csv"
         final_path = file_dir / filename
         self.create_metadata_file(file_dir)
-
-        # NEED TO HAVE IT UPDATE THE final_path EVERYTIME it goes to a new DataSet in the DataHandler
-        # Maybe if that's what is intended?
-        self.export_from_type_pandas(final_path)
+        self.__export_from_type_pandas(final_path)
 
         
-## Get / Set functions
+    ## Get / Set functions
+    
     def get_metadata(self):
         return self.metadata
 
     def get_key(self):
         return self.key
+
 
 # %%
 
