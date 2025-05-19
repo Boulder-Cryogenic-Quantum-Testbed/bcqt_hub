@@ -38,7 +38,7 @@ script_filename = Path(__file__).stem
 
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 
-import bcqt_hub.experiments.quick_helpers as qh
+import bcqthub.experiments.quick_helpers as qh
 
 data_dir = current_dir / r"data" / rf"Calibrate_TWPA_{dstr}"
 
@@ -78,8 +78,8 @@ SG_TestTone_DefaultConfig = {
 # %% initiate instrument drivers
 """ see 'VNA_Experiments/TakeMeasurements.py' or 'Simple_VNA_Sweep' for example usage """
 
-from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
-from bcqt_hub.bcqt_hub.drivers.instruments.SG_Anritsu import SG_Anritsu
+from bcqthub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqthub.bcqt_hub.drivers.instruments.SG_Anritsu import SG_Anritsu
 
 PNA_X = VNA_Keysight(VNA_Keysight_DefaultConfig, debug=True)  
 SG_MG3692C_TWPA = SG_Anritsu(SG_TWPA_DefaultConfig, debug=True)

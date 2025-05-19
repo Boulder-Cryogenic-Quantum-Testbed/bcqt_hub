@@ -25,10 +25,10 @@ sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub\experiments")
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub")
 # sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 
-from bcqt_hub.src.DataAnalysis import DataAnalysis
-import quick_helpers as qh
+from bcqthub.bcqt_hub.modules.DataAnalysis import DataAnalysis
+import bcqthub.experiments.quick_helpers as qh
 
-from bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqthub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 """ 
     most of the measurements for the characterization will be taken in the interactive window, so

@@ -46,16 +46,10 @@ for path in all_paths:
 # %%
 
 sys.path.append(r"C:\\Users\\Lehnert Lab\\GitHub")
-sys.path.append(r"C:\\Users\\Lehnert Lab\\GitHub\\drivers")
-import bcqt_hub
-import bcqt_hub.bcqt_hub.drivers
+import bcqthub
+# import bcqt_hub.bcqt_hub.drivers
 
-# %%
-########################################################
-########################################################
-########################################################
-
-from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqthub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 VNA_Keysight_InstrConfig = {
     "instrument_name" : "VNA_Keysight",
@@ -82,12 +76,8 @@ PNA_X.check_instr_error_queue()
 PNA_X.filter_configs()
 PNA_X.setup_s2p_measurement()
 
-display(PNA_X.configs)
-# %%
-sys.path.append(r"C:\\Users\\Lehnert Lab\\GitHub\\bcqt_hub\\experiments")
-
-from bcqt_hub.bcqt_hub.src.DataAnalysis import DataAnalysis
-import bcqt_hub.experiments.quick_helpers as qh
+from bcqthub.bcqt_hub.modules.DataAnalysis import DataAnalysis
+import bcqthub.experiments.quick_helpers as qh
 
 #%%
 all_f_centers = [

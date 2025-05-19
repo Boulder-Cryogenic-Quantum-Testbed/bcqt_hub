@@ -17,7 +17,7 @@ script_filename = Path(__file__).stem
 
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 
-import bcqt_hub.experiments.quick_helpers as qh
+import bcqthub.experiments.quick_helpers as qh
 
 # %%
 basepath = Path(rf"C:\Users\Lehnert Lab\GitHub\bcqt_hub\experiments\VNA Experiments\VNA Data Taker\data")

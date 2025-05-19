@@ -30,10 +30,13 @@ from pathlib import Path
 
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 
-import bcqt_hub.experiments.quick_helpers as qh
-from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
+# import bcqthub.experiments.quick_helpers as qh
+# from bcqthub.bcqthub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
+import bcqthub
+from bcqthub.src.DataHandler import DataHandler, DataSet
 
+from bcqthub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 class GHS_Controller():
     """

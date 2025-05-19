@@ -18,10 +18,10 @@ sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub\bcqt_hub\drivers\misc\Min
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub\bcqt_hub\drivers\instruments")
 
 from MC_VarAttenuator import MC_VarAttenuator
-from bcqt_hub.bcqt_hub.modules.DataAnalysis import DataAnalysis
-import bcqt_hub.experiments.quick_helpers as qh
+from bcqthub.bcqt_hub.modules.DataAnalysis import DataAnalysis
+import bcqthub.experiments.quick_helpers as qh
 
-from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqthub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 # %% import VNA driver
 

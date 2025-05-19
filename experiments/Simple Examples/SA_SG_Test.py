@@ -14,8 +14,13 @@ import gpib_ctypes
 # gpib_ctypes.gpib.gpib._load_lib(r"C:\Windows\System32\Gpib-32.dll")
 # sys.path.append("..")
 
-from SG_Anritsu import SG_Anritsu
-from SA_RnS_FSEB20 import SA_RnS_FSEB20
+import bcqthub
+from bcqthub.src.DataHandler import DataHandler, DataSet
+
+from bcqthub.drivers.instruments.SG_Anritsu import SG_Anritsu
+from bcqthub.drivers.instruments.SA_RnS_FSEB20 import SA_RnS_FSEB20
+
+# %%
 
 SA_RnS_InstrConfig = {
     "instrument_name" : "SA_RnS",
