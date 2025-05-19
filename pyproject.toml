@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bcqthub"
+version = "0.1.0"
+authors = [
+  { name="Jorge Ramirez", email="jorge.ramirez@colorado.edu" },
+  { name="John Pitten", email="john.pitten@colorado.edu" },
+  { name="Nhi Nguyen", email="nhi.nguyen@colorado.edu" },
+  { name="Alan La", email="alan.la@colorado.edu" },
+]
+description = 'A codebase built by the Boulder Cryogenic Quantum Testbed under Prof. Corey Rae McRae dedicated to the measurement of superconducting qubits and resonators.'
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+]
+
+[project.urls]
+Homepage = "https://github.com/Boulder-Cryogenic-Quantum-Testbed/bcqt_hub"
+Issues = "https://github.com/Boulder-Cryogenic-Quantum-Testbed/bcqt_hub/issues"
+
+
+[tool.setuptools]
+packages = ["bcqthub"]
