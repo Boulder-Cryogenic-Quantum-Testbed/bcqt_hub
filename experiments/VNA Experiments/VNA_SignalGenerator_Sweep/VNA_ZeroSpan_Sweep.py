@@ -22,9 +22,9 @@ script_filename = Path(__file__).stem
 
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub\bcqt_hub")
 
-import bcqt_hub.experiments.quick_helpers as qh
-from bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
-from bcqt_hub.drivers.instruments.SG_Anritsu import SG_Anritsu
+import bcqthub.experiments.quick_helpers as qh
+from bcqthub.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqthub.drivers.instruments.SG_Anritsu import SG_Anritsu
 
 
 # %%

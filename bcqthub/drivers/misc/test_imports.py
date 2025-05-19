@@ -18,15 +18,15 @@ import sys
 
 sys.path.append(r"C:\\Users\\Lehnert Lab\\GitHub")
 
-import bcqt_hub
+import bcqthub
 
 def ddir(module):
     ddir = [x for x in dir(module) if "__" not in x]
     return f"{module.__name__}  -> {ddir}"
 
 
-display(ddir(bcqt_hub))
-display(ddir(bcqt_hub.src))
-display(ddir(bcqt_hub.drivers))
+display(ddir(bcqthub))
+display(ddir(bcqthub.src))
+display(ddir(bcqthub.drivers))
 
 

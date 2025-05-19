@@ -22,10 +22,10 @@ script_filename = Path(__file__).stem
 
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
 
-from bcqt_hub.bcqt_hub.modules.DataAnalysis import DataAnalysis
-import bcqt_hub.experiments.quick_helpers as qh
+from bcqthub.bcqt_hub.modules.DataAnalysis import DataAnalysis
+import bcqthub.experiments.quick_helpers as qh
 
-from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqthub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 """ 
     most of the measurements for the characterization will be taken in the interactive window, so

@@ -14,11 +14,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-import bcqt_hub
-from bcqt_hub.src.DataHandler import DataHandler, DataSet
+import bcqthub
+from bcqthub.src.DataHandler import DataHandler, DataSet
 
-from bcqt_hub.drivers.instruments.SG_Anritsu import SG_Anritsu
-from bcqt_hub.drivers.instruments.SA_RnS_FSEB20 import SA_RnS_FSEB20
+from bcqthub.drivers.instruments.SG_Anritsu import SG_Anritsu
+from bcqthub.drivers.instruments.SA_RnS_FSEB20 import SA_RnS_FSEB20
 
 # %%
 

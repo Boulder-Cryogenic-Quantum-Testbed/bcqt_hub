@@ -42,10 +42,10 @@ for path in all_paths:
 # %%
 
 sys.path.append(r"C:\\Users\\Lehnert Lab\\GitHub")
-import bcqt_hub
+import bcqthub
 # import bcqt_hub.bcqt_hub.drivers
 
-from bcqt_hub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqthub.bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 all_f_centers = [5.863254e9]
 VNA_Keysight_InstrConfig = {
@@ -78,8 +78,8 @@ PNA_X.update_configs(**VNA_Keysight_InstrConfig)
 PNA_X.setup_s2p_measurement()
 display(PNA_X.configs)
 
-from bcqt_hub.bcqt_hub.modules.DataAnalysis import DataAnalysis
-import bcqt_hub.experiments.quick_helpers as qh
+from bcqthub.bcqt_hub.modules.DataAnalysis import DataAnalysis
+import bcqthub.experiments.quick_helpers as qh
 
 # %%
 

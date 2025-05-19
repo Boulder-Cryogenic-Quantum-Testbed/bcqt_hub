@@ -30,10 +30,10 @@ from pathlib import Path
 
 
 ### TODO: fix imports
-import bcqt_hub
-from bcqt_hub.src.DataHandler import DataHandler, DataSet
+import bcqthub
+from bcqthub.src.DataHandler import DataHandler, DataSet
 
-from bcqt_hub.drivers.instruments.VNA_Keysight import VNA_Keysight
+from bcqthub.drivers.instruments.VNA_Keysight import VNA_Keysight
 
 class GHS_Controller():
     """

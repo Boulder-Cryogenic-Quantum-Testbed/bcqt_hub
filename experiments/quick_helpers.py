@@ -11,7 +11,7 @@ from datetime import datetime
 from pathlib import Path
 import sys, time, datetime
 sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
-import bcqt_hub.experiments.quick_helpers as qh
+import bcqthub.experiments.quick_helpers as qh
 
 
 def find_resonators(s2p_df, fig_title="", find_peaks_kwargs={}, plot_phase = False):
