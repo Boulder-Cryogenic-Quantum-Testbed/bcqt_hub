@@ -12,7 +12,7 @@ import numpy as np
 current_dir = Path(".")
 script_filename = Path(__file__).stem
 
-sys.path.append(r"C:\Users\Lehnert Lab\GitHub")
+sys.path.append(r"C:\Users\Lehnert Lab\GitHub") 
 
 from bcqt_hub.bcqt_hub.modules.DataAnalysis import DataAnalysis
 import bcqt_hub.experiments.quick_helpers as qh
@@ -26,9 +26,9 @@ VNA_Keysight_InstrConfig = {
     "instrument_name" : "VNA_Keysight",
     # "rm_backend" : "@py",
     "rm_backend" : None,
-    "instr_address" : 'TCPIP0::192.168.0.105::inst0::INSTR',
-    "edelay" : 61.25,
-    "averages" : 2,
+    "instr_addr" : 'TCPIP0::192.168.0.105::inst0::INSTR',
+    "edelay" : 51.49,   #51.49ns for line1
+    "averages" : 10,
     "sparam" : ['S21'],  
     
     # "segment_type" : "linear",                    
@@ -56,30 +56,79 @@ PNA_X = VNA_Keysight(VNA_Keysight_InstrConfig, debug=True)
                       
 #           ]
 
-all_freqs = [
-             # MQC_BOE_02
-             4.363937e9,
-             4.736494e9,
-             5.106847e9,
-             5.474224e9,
-             5.871315e9,
-             6.230610e9,  # very low Q
-             6.624036e9,  # very low Q
-            7.010525e9  # very low Q
-            ] 
+# all_freqs = [
+#              # MQC_BOE_02
+#              4.363937e9,
+#              4.736494e9,
+#              5.106847e9,
+#              5.474224e9,
+#              5.871315e9,
+#              6.230610e9,  # very low Q
+#              6.624036e9,  # very low Q
+#             7.010525e9  # very low Q
+#             ] 
+
+# all_freqs = [
+#             #  NW_DF_01
+#             #  4.772140e9,
+#             #  5.188173e9,
+#             #  5.584948e9,
+#             #  5.965468e9,
+#             #  6.402026e9,
+#             #  6.839330e9,  
+#             #  7.258446e9,  
+#             #  7.703534e9 
+#             ] 
+
+# all_freqs = [
+#             #  NW_HF_01
+#             #  4.399275e9,
+#             #  4.807895e9,
+#             #  5.178230e9,
+#             #  5.542880e9,
+#             #  5.895315e9,  # very low Q
+#             #  6.298265e9,  # very low Q
+#             #  6.701320e9,  # very low Q
+#             #  7.103930e9  # very low Q
+#             ] 
+
+# all_freqs = [
+#             #  Wide Sweep
+#              4.5e9,
+#              5.5e9, 
+#              6.5e9, 
+#              7.5e9 
+#             ] 
+
 
 ext_atten = 30
 
-# 100 mins per resonator
-ultra_high_powers = np.arange(10, 0, -1).round(2)
-# high_powers = np.arange(1,-40,-1).round(2) # 12 secs each = 40 min
-med_powers = np.arange(-41, -64, -3).round(2)  # 24 seconds each = 22 min
-low_powers = np.arange(-65, -79, -3).round(2)  # 120 secs each = 20 min
-ultra_low_powers = np.arange(-80, -90, -2).round(2)   # 240 secs = 20 min
+# ultra_high_powers = np.arange(10, 0, -1).round(2)
+# high_powers = np.arange(-30,-46,-3).round(2) 
+# med_powers = np.arange(-48, -64, -3).round(2) 
+# low_powers = np.arange(-65, -73, -3).round(2) 
+# ultra_low_powers = np.arange(-75, -85, -1).round(2) 
+  
+high_powers = np.arange(-30,-58,-3) 
+med_powers = np.arange(-60, -73, -3)  
+low_powers = np.arange(-73, -80, -2)  
+ultra_low_powers = np.arange(-81, -86, -2)  
 
-# # measure every power like normal
-# all_powers = [*high_powers, *med_powers, *low_powers, *ultra_low_powers]
-all_powers = [*ultra_high_powers, *med_powers, *low_powers, *ultra_low_powers]
+# high_powers = np.arange(-54,-58,-3) 
+# med_powers = np.arange(-66, -73, -3)  
+# low_powers = np.arange(-73, -80, -2)  
+# ultra_low_powers = np.arange(-81, -86, -2)  
+
+# For wide sweeping
+# high_powers = np.arange(-30, -31, -3) 
+
+# measure every power like normal
+all_powers = [*high_powers, *med_powers, *low_powers, *ultra_low_powers]
+# all_powers = [*high_powers, *med_powers, *low_powers]
+# all_powers = [*med_powers, *low_powers]
+# all_powers = [*ultra_low_powers]
+# all_powers = [*high_powers]
+# all_powers = [*med_powers]
 print(all_powers)
 
 # measure all even
@@ -98,8 +147,8 @@ print(f"Measuring {len(all_freqs)} resonators and {len(all_powers)} powers for e
 time.sleep(1)
 
 Measurement_Configs = {
-    "f_span" : 0.5e6,
-    "n_points" : 201,
+    "f_span" : 1000e6, # the actual span is only half of f_span!
+    "n_points" : 5001,
     "if_bandwidth" : 1000,
     "sparam" : ['S21'],  
     "Noffres" : 10,
@@ -110,11 +159,11 @@ Measurement_Configs = {
 num_res = len(all_freqs)
 
 ETA_mins = sum([
-    # len(high_powers)*2.5 // 60,
-    len(med_powers)*7.5 // 60,
-    len(low_powers)*75 // 60,
-    len(ultra_low_powers)*450 // 60,
-]) / 10
+    len(high_powers)*53 // 60,
+    len(med_powers)*1093 // 60,
+    len(low_powers)*2167 // 60,
+    len(ultra_low_powers)*4366 // 60,
+]) //10
 
 now = datetime.datetime.now()
 finishing_time = now + datetime.timedelta(minutes=ETA_mins*num_res)
@@ -166,20 +215,20 @@ for idx, freq in enumerate(all_freqs):  # loop over all resonators
             Measurement_Configs["averages"] = 100 
             print(f"{power} in ultra_high_powers - averages set to {Measurement_Configs["averages"]}")
         
-        # if power in high_powers:
-        #     Measurement_Configs["averages"] = 100  # 4 seconds 
-        #     print(f"{power} in high_powers - averages set to {Measurement_Configs["averages"]}")
+        if power in high_powers:
+            Measurement_Configs["averages"] = 2  # 53 seconds 
+            print(f"{power} in high_powers - averages set to {Measurement_Configs["averages"]}")
             
         elif power in med_powers:
-            Measurement_Configs["averages"] = 500  # 12 seconds
+            Measurement_Configs["averages"] = 1000  # 1090 seconds
             print(f"{power} in med_powers - averages set to {Measurement_Configs["averages"]}")
         
         elif power in low_powers:
-            Measurement_Configs["averages"] = 5000  # 24 seconds 
+            Measurement_Configs["averages"] = 10000  # 2183 seconds 
             print(f"{power} in low_powers - averages set to {Measurement_Configs["averages"]}")
             
         elif power in ultra_low_powers:
-            Measurement_Configs["averages"] = 30000  # 240 seconds  (4 mins)
+            Measurement_Configs["averages"] = 20000  # 4366 seconds 
             print(f"{power} in ultra_low_powers - averages set to {Measurement_Configs["averages"]}")
             
             

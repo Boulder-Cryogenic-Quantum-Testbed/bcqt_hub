@@ -130,15 +130,8 @@ class PSU_Keysight_E36311A(BaseDriver):
     #############################################################
     
     
-    def get_output(self, channel):
-        
-        return reported_status
-    
-    
-    def set_output(self, channel, output):
-        
-        return None
-    
+    def ramp_current():
+        return
     
     
     
