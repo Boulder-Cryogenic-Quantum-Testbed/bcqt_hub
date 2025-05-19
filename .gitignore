@@ -12,9 +12,9 @@
 # garbage
 *DS_Store*
 *__pycache__*
-*.egg
-*.whl
-*.tar
+*.egg*
+*.whl*
+*.tar*
 *metadata.json
 
 # attempt to remove cryoswitch files
