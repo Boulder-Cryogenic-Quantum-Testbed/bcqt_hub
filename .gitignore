@@ -6,16 +6,16 @@
 # data objects
 *.7z
 *.zip
-*.csv*
+*.csv
 */data/*
 
 # garbage
 *DS_Store*
 *__pycache__*
-*.egg*
-*.whl*
-*.tar*
-*metadata.json*
+*.egg
+*.whl
+*.tar
+*metadata.json
 
 # attempt to remove cryoswitch files
 *4.909V*.json
