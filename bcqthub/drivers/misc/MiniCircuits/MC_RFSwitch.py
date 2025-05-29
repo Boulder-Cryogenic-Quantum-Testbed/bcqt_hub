@@ -60,7 +60,7 @@ class MC_RFSwitch():
 
             # The switch displays a web GUI for unrecognised commands
             if len(PTE_Return) > 100:
-                print ("Error, command not found:", CmdToSend)
+                print("Error, command not found:", CmdToSend)
                 PTE_Return = "Invalid Command!"
 
         # Catch an exception if URL is incorrect (incorrect IP or disconnected)
